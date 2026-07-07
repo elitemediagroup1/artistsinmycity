@@ -419,7 +419,7 @@
 
 /* ---- TASK 5: SEARCH DROPDOWN ---- */
 .top-search{position:relative}
-.search-pop{position:absolute;top:calc(100% + 8px);left:0;width:min(360px,86vw);max-height:70vh;overflow-y:auto;background:#14141c;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:.8rem;box-shadow:0 24px 60px rgba(0,0,0,.55);z-index:120}
+.search-pop{position:absolute;top:calc(100% + 8px);right:0;left:auto;width:min(360px,86vw);max-height:70vh;overflow-y:auto;background:#14141c;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:.8rem;box-shadow:0 24px 60px rgba(0,0,0,.55);z-index:120}
 .sp-group{margin-bottom:.9rem}
 .sp-group h5{margin:0 0 .35rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#6b7180}
 .sp-item{display:block;padding:.5rem .6rem;border-radius:9px;color:#e8eaf0;text-decoration:none;font-size:.92rem}
