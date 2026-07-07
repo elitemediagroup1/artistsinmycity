@@ -1,32 +1,60 @@
-/* Roadie floating AI widget styles */
-.roadie-fab{position:fixed;right:22px;bottom:22px;z-index:9999;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,16,26,.92);backdrop-filter:blur(14px);color:#fff;cursor:pointer;font-weight:800;font-size:13px;box-shadow:0 12px 40px rgba(123,77,255,.35),0 0 0 1px rgba(255,63,156,.18)}
-.roadie-fab:hover{box-shadow:0 16px 50px rgba(21,151,255,.45),0 0 0 1px rgba(255,63,156,.3)}
-.roadie-avatar{width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;background:linear-gradient(135deg,#ff3f9c,#7b4dff 55%,#1597ff);position:relative;overflow:hidden}
-.roadie-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.roadie-dot{width:10px;height:10px;border-radius:50%;background:#22e07a;border:2px solid #0c101a;position:absolute;right:0;bottom:0}
-.roadie-fab-label{white-space:nowrap}
+/* Roadie(TM) floating widget styles */
+.roadie-root{position:fixed;right:22px;bottom:22px;z-index:9999;font-family:inherit}
 
-.roadie-panel{position:fixed;right:22px;bottom:22px;z-index:10000;width:360px;max-width:calc(100vw - 24px);height:560px;max-height:calc(100vh - 40px);display:none;flex-direction:column;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:rgba(10,13,22,.98);backdrop-filter:blur(18px);box-shadow:0 30px 90px rgba(0,0,0,.6)}
-.roadie-panel.open{display:flex}
-.roadie-header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid rgba(255,255,255,.12);background:linear-gradient(120deg,rgba(255,63,156,.18),rgba(21,151,255,.18))}
-.roadie-header .roadie-avatar{width:44px;height:44px}
-.roadie-title{flex:1}
-.roadie-title b{display:block;font-size:16px}
-.roadie-title small{color:#9ca8bb;font-size:12px}
-.roadie-header-status{display:flex;align-items:center;gap:6px;font-size:11px;color:#22e07a;font-weight:800}
-.roadie-header-status i{width:8px;height:8px;border-radius:50%;background:#22e07a;display:inline-block}
-.roadie-close{background:none;border:0;color:#c8d2e6;font-size:22px;cursor:pointer;line-height:1;padding:4px 8px}
-.roadie-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.roadie-msg{max-width:85%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.45}
-.roadie-msg.bot{align-self:flex-start;background:rgba(255,255,255,.08)}
-.roadie-msg.user{align-self:flex-end;background:linear-gradient(135deg,rgba(255,63,156,.32),rgba(123,77,255,.32));color:#fff}
-.roadie-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
-.roadie-quick button{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f5;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
-.roadie-quick button:hover{border-color:rgba(80,186,255,.6);color:#fff}
-.roadie-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,.12)}
-.roadie-input input{flex:1;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;padding:12px 16px;font-size:14px}
-.roadie-input button{border:0;border-radius:999px;padding:0 18px;font-weight:900;color:#fff;background:linear-gradient(135deg,#ff3f9c,#7b4dff,#1597ff);cursor:pointer}
-@media(max-width:480px){
-  .roadie-panel{right:8px;bottom:8px;width:calc(100vw - 16px);height:calc(100vh - 80px)}
-  .roadie-fab{right:14px;bottom:14px}
+/* Launcher */
+.roadie-launcher{display:flex;align-items:center;gap:10px;border:0;cursor:pointer;
+  padding:10px 18px 10px 10px;border-radius:99px;color:#fff;
+  background:linear-gradient(120deg,#12121c,#1b1430);
+  box-shadow:0 10px 30px rgba(138,92,255,.35),0 0 0 1px rgba(255,255,255,.06) inset;
+  transition:transform .25s,box-shadow .25s}
+.roadie-launcher:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(255,92,168,.4)}
+.roadie-ava{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-weight:900;
+  background:linear-gradient(135deg,#ff5ca8,#8a5cff 60%,#3ec6ff);color:#0b0b12;font-size:18px;
+  /* TODO replace with approved Roadie character asset (assets/characters/roadie/roadie-default.png) */
+  background-image:linear-gradient(135deg,#ff5ca8,#8a5cff 60%,#3ec6ff);background-size:cover;background-position:center}
+.roadie-ava.sm{width:32px;height:32px;font-size:15px}
+.roadie-launch-text{font-weight:700;font-size:14px}
+.roadie-dot{width:9px;height:9px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 3px rgba(46,204,113,.25)}
+.roadie-dot.online{margin-left:auto}
+
+@keyframes roadieNudge{0%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}60%{transform:translateY(-3px)}}
+.roadie-launcher.nudge{animation:roadieNudge .7s ease 2}
+
+/* Panel */
+.roadie-panel{position:absolute;right:0;bottom:64px;width:340px;max-width:88vw;height:460px;max-height:72vh;
+  display:none;flex-direction:column;overflow:hidden;border-radius:20px;
+  background:rgba(14,14,22,.96);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.roadie-root.open .roadie-panel{display:flex;animation:roadieUp .28s ease}
+.roadie-root.open .roadie-launch-text{display:none}
+@keyframes roadieUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.roadie-head{display:flex;align-items:center;gap:10px;padding:14px 14px;border-bottom:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(120deg,rgba(255,92,168,.14),rgba(62,198,255,.10))}
+.roadie-head-txt{display:flex;flex-direction:column;line-height:1.1}
+.roadie-head-txt strong{color:#fff;font-size:15px}
+.roadie-head-txt small{color:#9aa0b4;font-size:11px}
+.roadie-close{margin-left:6px;background:none;border:0;color:#9aa0b4;font-size:22px;cursor:pointer;line-height:1}
+.roadie-close:hover{color:#fff}
+
+.roadie-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.roadie-msg{max-width:82%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.4}
+.roadie-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#e9e9f2;border-bottom-left-radius:4px}
+.roadie-msg.user{align-self:flex-end;background:linear-gradient(120deg,#ff5ca8,#8a5cff);color:#fff;border-bottom-right-radius:4px}
+
+.roadie-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 10px}
+.roadie-chip{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#e9e9f2;
+  padding:7px 12px;border-radius:99px;font-size:12.5px;cursor:pointer;transition:.2s}
+.roadie-chip:hover{border-color:#8a5cff;background:rgba(138,92,255,.16)}
+
+.roadie-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,.07)}
+.roadie-input input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;padding:10px 12px;color:#fff;font-size:14px;outline:none}
+.roadie-input input:focus{border-color:#8a5cff}
+.roadie-input button{border:0;border-radius:12px;padding:0 14px;cursor:pointer;color:#fff;font-size:16px;
+  background:linear-gradient(120deg,#ff5ca8,#8a5cff)}
+
+@media(max-width:600px){
+  .roadie-root{right:14px;bottom:14px}
+  .roadie-panel{width:calc(100vw - 28px);height:70vh;right:0}
 }
