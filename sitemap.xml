@@ -66,4 +66,10 @@
   <url><loc>https://artistsinmycity.com/legal/copyright.html</loc></url>
   <url><loc>https://artistsinmycity.com/legal/safety.html</loc></url>
 <url><loc>https://artistsinmycity.com/pages/integrations.html</loc></url>
+  <url>
+    <loc>https://artistsinmycity.com/pages/artist-onboarding.html</loc>
+  </url>
+  <url>
+    <loc>https://artistsinmycity.com/pages/exhibit-builder.html</loc>
+  </url>
 </urlset>
