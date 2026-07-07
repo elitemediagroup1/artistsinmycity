@@ -700,3 +700,148 @@
    studio-page / xb-page CSS grid (prevents column collisions). */
 .s6-section{grid-column:1 / -1;margin:0 0 22px;}
 .studio-page > .s6-section,.xb-page > .s6-section{grid-column:1 / -1;}
+
+/* ===================================================================
+   SPRINT 7 (v4.0) — THE DIGITAL EXHIBIT EXPERIENCE
+   Reuses the dark premium palette + s5-/s6- tokens. New s7- only.
+   =================================================================== */
+.s7-section{grid-column:1 / -1;margin:0 0 22px;}
+.studio-page > .s7-section,.xb-page > .s7-section{grid-column:1 / -1;}
+.s7-designer,.s7-themes,.s7-designmode,.s7-review,.s7-story,.s7-visitor,.s7-insights,.s7-coll-exp{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:24px;color:#e8e8ea;}
+.s7-designer-head{margin-bottom:16px;}
+.s7-designer-head h2{margin:0 0 6px;font-size:1.4rem;color:#fff;letter-spacing:.2px;}
+.s7-sub{margin:0;color:#9a9aa2;font-size:.92rem;line-height:1.5;max-width:640px;}
+.s7-panel-h{font-size:1rem;color:#fff;margin:0 0 12px;}
+.s7-tinynote,.s7-story-empty{color:#8a8a92;font-size:.78rem;}
+/* TASK 1 — Designer */
+.s7-designer-grid{display:grid;grid-template-columns:minmax(240px,340px) 1fr;gap:24px;}
+.s7-sec-list{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+.s7-sec-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);transition:border-color .15s,opacity .15s,transform .15s;}
+.s7-sec-row:hover{border-color:rgba(123,92,255,.4);transform:translateX(2px);}
+.s7-sec-row.is-hidden{opacity:.45;}
+.s7-sec-handle{color:#6a6a72;cursor:grab;font-size:1rem;}
+.s7-sec-name{flex:1;font-size:.9rem;color:#e0e0e6;}
+.s7-sec-tools{display:flex;gap:4px;}
+.s7-sec-btn{width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
+  background:transparent;color:#cfcfd6;cursor:pointer;font-size:.8rem;line-height:1;transition:background .15s,border-color .15s;}
+.s7-sec-btn:hover{background:rgba(123,92,255,.16);border-color:#7b5cff;color:#fff;}
+/* Live preview panel */
+.s7-pv-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.s7-pv-devices{display:inline-flex;gap:4px;background:rgba(255,255,255,.05);border-radius:99px;padding:3px;}
+.s7-pv-device{border:none;background:transparent;color:#9a9aa2;font-size:.78rem;padding:5px 14px;border-radius:99px;cursor:pointer;transition:background .15s,color .15s;}
+.s7-pv-device.is-active{background:#7b5cff;color:#fff;}
+.s7-pv-frame{margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#0c0c12;
+  padding:14px;transition:max-width .3s ease;overflow:hidden;}
+.s7-pv-desktop{max-width:100%;}
+.s7-pv-tablet{max-width:520px;}
+.s7-pv-mobile{max-width:300px;}
+.s7-pv-scroll{display:grid;gap:10px;max-height:460px;overflow-y:auto;}
+.s7-pv-block{border-radius:10px;padding:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;gap:4px;transition:border-color .15s;}
+.s7-pv-block:hover{border-color:rgba(123,92,255,.35);}
+.s7-pv-label{font-weight:600;color:#fff;font-size:.85rem;}
+.s7-pv-hint{color:#8a8a92;font-size:.72rem;}
+.s7-pv-hero{min-height:90px;background:linear-gradient(135deg,rgba(123,92,255,.25),rgba(255,255,255,.03));}
+/* TASK 2 — Themes */
+.s7-theme-preview-bar{height:120px;border-radius:14px;display:flex;align-items:flex-end;padding:16px;margin:0 0 14px;
+  color:#fff;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.5);transition:background .35s ease;}
+.s7-theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+.s7-theme-card{border-radius:16px;overflow:hidden;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);transition:border-color .18s,transform .18s;display:flex;flex-direction:column;}
+.s7-theme-card:hover{border-color:rgba(123,92,255,.5);transform:translateY(-2px);}
+.s7-theme-card.is-active{border-color:#7b5cff;box-shadow:0 0 0 1px #7b5cff inset;}
+.s7-theme-preview{height:96px;}
+.s7-theme-info{padding:14px 16px 4px;}
+.s7-theme-info h4{margin:0 0 4px;color:#fff;font-size:1rem;}
+.s7-theme-bestfor{color:#b980ff;font-size:.76rem;font-weight:600;}
+.s7-theme-desc{color:#9a9aa2;font-size:.82rem;line-height:1.45;margin:8px 0 0;}
+.s7-theme-actions{display:flex;gap:8px;padding:12px 16px 16px;margin-top:auto;}
+/* TASK 3 — Design Mode suggestions */
+.s7-sug-card{display:flex;gap:14px;padding:16px;border-radius:14px;margin-bottom:12px;
+  background:rgba(123,92,255,.07);border:1px solid rgba(123,92,255,.25);}
+.s7-sug-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#fff;background:linear-gradient(135deg,#7b5cff,#b980ff);}
+.s7-sug-text{margin:0 0 10px;color:#e8e8ea;line-height:1.5;font-size:.92rem;}
+.s7-sug-actions{display:flex;flex-wrap:wrap;gap:8px;}
+.s7-sug-btn{border:1px solid rgba(255,255,255,.18);background:transparent;color:#cfcfd6;
+  border-radius:9px;padding:6px 14px;font-size:.78rem;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.s7-sug-btn:hover{background:rgba(123,92,255,.18);border-color:#7b5cff;color:#fff;}
+/* TASK 9 — Insights */
+.s7-insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+.s7-insight-card{position:relative;padding:18px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);}
+.s7-insight-tag{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:#ffb454;background:rgba(255,180,84,.12);padding:3px 10px;border-radius:99px;margin-bottom:10px;}
+.s7-insight-text{margin:0;color:#e0e0e6;font-size:.9rem;line-height:1.5;}
+/* TASK 6 — Review */
+.s7-rv-list{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px;}
+.s7-rv-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:12px;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);}
+.s7-rv-dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;margin-top:5px;background:#555;}
+.s7-rv-exc .s7-rv-dot{background:#3ddc97;}.s7-rv-good .s7-rv-dot{background:#4ea1ff;}
+.s7-rv-att .s7-rv-dot{background:#ffb454;}.s7-rv-miss .s7-rv-dot{background:#ff6b6b;}
+.s7-rv-main{flex:1;display:flex;flex-direction:column;gap:2px;}
+.s7-rv-name{color:#fff;font-weight:600;font-size:.9rem;}
+.s7-rv-tip{color:#8a8a92;font-size:.78rem;}
+.s7-rv-state{color:#cfcfd6;font-size:.78rem;white-space:nowrap;}
+/* TASK 7 — Story Mode */
+.s7-story-block{padding:16px 18px;border-radius:14px;margin-bottom:12px;position:relative;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);}
+.s7-story-h{margin:0 0 6px;color:#fff;font-size:1rem;}
+.s7-story-text{margin:0;color:#d8d8de;line-height:1.55;font-size:.9rem;}
+.s7-story-edit{position:absolute;top:14px;right:14px;background:transparent;border:1px solid rgba(255,255,255,.18);
+  color:#cfcfd6;border-radius:8px;padding:4px 12px;font-size:.72rem;cursor:pointer;transition:border-color .15s,color .15s;}
+.s7-story-edit:hover{border-color:#7b5cff;color:#fff;}
+/* TASK 4 — Public Exhibit Experience (breathing, gallery-like) */
+.s7-exhibit{display:flex;flex-direction:column;gap:56px;padding:8px 0;}
+.s7-x-hero{text-align:center;padding:72px 20px;border-radius:24px;
+  background:radial-gradient(circle at 50% 30%,rgba(123,92,255,.22),rgba(255,255,255,.02));}
+.s7-x-kicker{display:inline-block;font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:#b980ff;margin-bottom:16px;}
+.s7-x-title{font-size:clamp(2rem,5vw,3.4rem);margin:0 0 16px;color:#fff;letter-spacing:-.02em;line-height:1.05;}
+.s7-x-lead{max-width:600px;margin:0 auto;color:#b8b8c0;font-size:1.05rem;line-height:1.6;}
+.s7-x-block{padding:0 4px;}
+.s7-x-h{font-size:1.5rem;color:#fff;margin:0 0 18px;letter-spacing:-.01em;}
+/* TASK 5 — Collection Experience */
+.s7-coll-grid7{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:6px 0 16px;}
+.s7-coll-card,.s7-exhibit-card{border-radius:16px;overflow:hidden;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:border-color .18s,transform .18s;}
+.s7-coll-card:hover,.s7-exhibit-card:hover{border-color:rgba(123,92,255,.5);transform:translateY(-3px);}
+.s7-coll-cover{height:120px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:#b980ff;
+  background:linear-gradient(135deg,rgba(123,92,255,.18),rgba(255,255,255,.03));}
+.s7-coll-body,.s7-exhibit-body{padding:14px 16px;}
+.s7-coll-body h4,.s7-exhibit-body h4{margin:0 0 4px;color:#fff;font-size:1rem;}
+.s7-coll-body p,.s7-exhibit-body p{margin:0;color:#9a9aa2;font-size:.84rem;line-height:1.45;}
+.s7-coll-meta{display:inline-block;margin-top:8px;font-size:.72rem;color:#b980ff;}
+.s7-exhibit-cover{height:130px;display:flex;align-items:flex-end;padding:14px;}
+.s7-exhibit-cover-label{color:#fff;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+/* TASK 8 — Visitor */
+.s7-visitor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:6px 0 16px;}
+.s7-visitor-card{padding:16px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);}
+.s7-visitor-card h4{margin:0 0 10px;color:#fff;font-size:.95rem;}
+.s7-visitor-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+/* Share + QR panels */
+.s7-share-panel,.s7-qr-panel{border-radius:14px;padding:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);}
+.s7-share-panel h4{margin:0 0 12px;color:#fff;font-size:1rem;}
+.s7-share-row{display:flex;flex-wrap:wrap;gap:10px;}
+.s7-qr-panel{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.s7-qr-hidden{display:none;}
+.s7-qr-box{width:120px;height:120px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;color:#8a8a92;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);}
+.s7-qr-cap{font-size:.76rem;color:#8a8a92;max-width:260px;margin:0;}
+/* TASK 10 — Micro interactions (elegant, fast, subtle) */
+.s7-theme-card,.s7-sug-btn,.s7-sec-btn,.s7-pv-device,.s7-coll-card,.s7-exhibit-card,.s7-story-edit{will-change:transform;}
+@media (prefers-reduced-motion:reduce){.s7-sec-row,.s7-theme-card,.s7-coll-card,.s7-exhibit-card,.s7-theme-preview-bar,.s7-pv-frame{transition:none !important;}}
+/* Responsive */
+@media (max-width:900px){
+  .s7-designer-grid{grid-template-columns:1fr;}
+  .s7-exhibit{gap:40px;}
+  .s7-x-hero{padding:52px 16px;}
+}
+@media (max-width:640px){
+  .s7-designer,.s7-themes,.s7-designmode,.s7-review,.s7-story,.s7-visitor,.s7-insights,.s7-coll-exp{padding:16px;}
+  .s7-pv-tablet,.s7-pv-mobile{max-width:100%;}
+  .s7-rv-row{flex-wrap:wrap;}
+  .s7-theme-actions{flex-direction:column;}
+}
