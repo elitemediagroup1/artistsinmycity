@@ -89,3 +89,47 @@
 .portal-tile small{color:var(--muted)}
 .portal-form{display:grid;gap:14px}
 @media(max-width:640px){.portal-tiles{grid-template-columns:1fr}}
+
+
+/* ============ SPRINT 3 — PREMIUM PRODUCT PASS ============ */
+
+/* --- Cinematic hero --- */
+.hero.hero-cinematic{position:relative;overflow:hidden;min-height:720px;display:flex;align-items:center;isolation:isolate;padding:0}
+.hero-cine{position:absolute;inset:0;z-index:0}
+.hero-slides{position:absolute;inset:0}
+.hero-slide{position:absolute;inset:0;opacity:0;transform:scale(1.08);transition:opacity 1.2s ease,transform 6s ease;background:var(--scene);background-size:cover;background-position:center}
+.hero-slide.is-active{opacity:1;transform:scale(1)}
+.hero-slide::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(60% 80% at 75% 30%,rgba(255,255,255,.10),transparent 60%),
+  radial-gradient(50% 60% at 20% 80%,rgba(120,80,255,.18),transparent 60%);
+  mix-blend-mode:screen}
+.hero-scene-noise{position:absolute;inset:0;opacity:.06;background-image:radial-gradient(rgba(255,255,255,.6) 1px,transparent 1px);background-size:3px 3px;pointer-events:none}
+.hero-cine-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,6,12,.92) 0%,rgba(6,6,12,.72) 40%,rgba(6,6,12,.35) 100%),linear-gradient(0deg,rgba(6,6,12,.85),transparent 55%);pointer-events:none}
+.hero-cine-watermark{position:absolute;top:50%;left:52%;transform:translate(-50%,-50%) rotate(-8deg);font-size:clamp(60px,12vw,190px);font-weight:900;letter-spacing:.04em;color:#fff;opacity:.10;pointer-events:none;white-space:nowrap;z-index:1}
+.hero.hero-cinematic .hero-inner{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 32px}
+.hero.hero-cinematic .hero-copy{max-width:640px}
+.hero.hero-cinematic h1{font-size:clamp(44px,6.5vw,88px);line-height:.98;margin:.15em 0 .35em;font-weight:900;letter-spacing:-.02em}
+.hero.hero-cinematic h1 .grad{background:linear-gradient(90deg,#ff5ca8,#8a5cff 60%,#3ec6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero.hero-cinematic .hero-sub{font-size:clamp(16px,1.6vw,21px);opacity:.85;max-width:520px}
+.hero.hero-cinematic .eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;opacity:.8}
+.hero-kind-label{transition:opacity .5s ease}
+.hero-dots{display:flex;gap:10px;margin-top:26px}
+.hero-dot{width:34px;height:5px;border-radius:99px;border:0;background:rgba(255,255,255,.22);cursor:pointer;padding:0;transition:background .3s,width .3s}
+.hero-dot.is-active{background:linear-gradient(90deg,#ff5ca8,#8a5cff);width:52px}
+@media(max-width:900px){.hero.hero-cinematic{min-height:640px}.hero-cine-overlay{background:linear-gradient(0deg,rgba(6,6,12,.94) 10%,rgba(6,6,12,.55) 100%)}}
+@media(max-width:600px){.hero.hero-cinematic{min-height:620px}.hero.hero-cinematic .hero-inner{padding:0 20px}}
+
+/* --- Animated featured category tiles --- */
+.tile-animated{position:relative;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;border:1px solid rgba(255,255,255,.06)}
+.tile-animated::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(120deg,#ff5ca8,#8a5cff,#3ec6ff);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .35s}
+.tile-animated img,.tile-animated .tile-img{transition:transform .5s ease}
+.tile-animated:hover{transform:translateY(-6px);box-shadow:0 18px 50px rgba(138,92,255,.28)}
+.tile-animated:hover::before{opacity:1}
+.tile-animated:hover img,.tile-animated:hover .tile-img{transform:scale(1.08)}
+
+/* --- Exhibit cards (formerly artist cards) --- */
+.exhibit-card{transition:transform .35s,box-shadow .35s}
+.exhibit-card:hover{transform:translateY(-4px);box-shadow:0 16px 44px rgba(62,198,255,.22)}
+
+/* --- Footer flag line --- */
+.footer .footer-usa{display:block;margin-top:14px;font-size:12px;opacity:.6;text-align:center}
