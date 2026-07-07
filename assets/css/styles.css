@@ -575,3 +575,123 @@
   .s5-note-panel{right:8px!important;left:8px;width:auto;}
   .s5-theme-grid,.s5-coll-grid{grid-template-columns:1fr;}
 }
+
+/* ===================================================================
+   SPRINT 6 (v3.5) — ARTIST SUCCESS SYSTEM
+   Reuses the existing dark premium palette + s5- tokens.
+   New s6- classes only where a new pattern is introduced.
+   =================================================================== */
+.s6-score-card,.s6-check-card,.s6-week-card,.s6-goals-card,.s6-share-card,
+.s6-linkhub-card,.s6-media-card,.s6-founding{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;padding:22px;color:#e8e8ea;}
+.s6-score-card h3,.s6-check-card h3,.s6-week-card h3,.s6-goals-card h3,
+.s6-share-card h3,.s6-linkhub-card h3,.s6-media-card h3{
+  margin:0 0 6px;font-size:1.05rem;font-weight:600;letter-spacing:.2px;color:#fff;}
+.s6-goals-sub{margin:0 0 14px;color:#9a9aa2;font-size:.9rem;}
+/* shared progress bar */
+.s6-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:10px 0;}
+.s6-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#7b5cff,#b980ff);transition:width .4s ease;}
+/* TASK 1 — Exhibit Score */
+.s6-score-head{display:flex;gap:20px;align-items:center;margin-bottom:12px;}
+.s6-score-ring{width:96px;height:96px;flex:0 0 96px;border-radius:50%;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 40%,rgba(123,92,255,.25),rgba(255,255,255,.03));
+  border:2px solid rgba(123,92,255,.5);}
+.s6-score-num{font-size:1.9rem;font-weight:700;line-height:1;color:#fff;}
+.s6-score-of{font-size:.7rem;color:#9a9aa2;}
+.s6-score-meta{flex:1;min-width:0;}
+.s6-score-status{display:inline-block;font-size:.8rem;font-weight:600;padding:4px 12px;border-radius:99px;}
+.s6-band-approved{color:#3ddc97;border-color:#3ddc97 !important;background:rgba(61,220,151,.12);}
+.s6-band-almost{color:#4ea1ff;background:rgba(78,161,255,.12);}
+.s6-band-good{color:#ffb454;background:rgba(255,180,84,.12);}
+.s6-band-needs{color:#ff6b6b;background:rgba(255,107,107,.12);}
+.s6-score-list{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.s6-score-row{display:flex;align-items:center;gap:8px;font-size:.85rem;color:#cfcfd6;}
+.s6-score-dot{width:9px;height:9px;border-radius:50%;background:#555;flex:0 0 9px;}
+.s6-st-complete .s6-score-dot{background:#3ddc97;}
+.s6-st-attention .s6-score-dot{background:#ffb454;}
+.s6-st-missing .s6-score-dot{background:#ff6b6b;}
+.s6-score-name{flex:1;}.s6-score-state{color:#8a8a92;font-size:.75rem;}
+/* TASK 2 — Checklist */
+.s6-check-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.s6-check-pct{color:#b980ff;font-weight:600;font-size:.85rem;white-space:nowrap;}
+.s6-check-list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px;}
+.s6-check-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:12px;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);}
+.s6-check-item.is-done{background:rgba(61,220,151,.07);border-color:rgba(61,220,151,.25);}
+.s6-check-box{width:22px;height:22px;flex:0 0 22px;border-radius:7px;border:1.5px solid rgba(255,255,255,.25);
+  background:transparent;color:#3ddc97;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.s6-check-item.is-done .s6-check-box{background:rgba(61,220,151,.18);border-color:#3ddc97;}
+.s6-check-lbl{font-size:.9rem;color:#e0e0e6;}
+.s6-check-item.is-done .s6-check-lbl{color:#9fe8c6;}
+/* TASK 3 — Founding Artist */
+.s6-founding{position:relative;overflow:hidden;text-align:center;
+  background:linear-gradient(135deg,rgba(245,196,81,.12),rgba(255,255,255,.03));border-color:rgba(245,196,81,.35);}
+.s6-founding-ribbon{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:2px;
+  padding:5px 16px;border-radius:99px;background:#f5c451;color:#1a1400;margin-bottom:12px;}
+.s6-founding-msg{max-width:460px;margin:12px auto;color:#e8e0c8;line-height:1.5;}
+.s6-founding-cert{display:inline-flex;gap:10px;align-items:center;font-size:.85rem;color:#c8c0a8;
+  border:1px dashed rgba(245,196,81,.4);border-radius:12px;padding:10px 16px;}
+.s6-cert-seal{font-size:1.3rem;color:#f5c451;}
+/* TASK 4 — Badges */
+.s6-badge-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.s6-badge{position:relative;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;
+  font-size:.8rem;font-weight:600;color:var(--badge,#fff);background:rgba(255,255,255,.05);
+  border:1px solid var(--badge,#666);cursor:default;outline:none;}
+.s6-badge-ic{font-size:.9rem;}
+.s6-badge-tip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  width:180px;padding:8px 10px;border-radius:10px;background:#1c1c22;color:#d8d8de;font-size:.72rem;
+  font-weight:400;line-height:1.35;opacity:0;pointer-events:none;transition:opacity .15s;z-index:20;
+  border:1px solid rgba(255,255,255,.1);}
+.s6-badge:hover .s6-badge-tip,.s6-badge:focus .s6-badge-tip{opacity:1;}
+/* TASK 5 — Weekly Report metrics */
+.s6-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:6px 0 14px;}
+/* TASK 6 — Goals */
+.s6-goal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;}
+.s6-goal-card{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;cursor:pointer;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#e0e0e6;text-align:left;
+  font-size:.9rem;transition:border-color .15s,background .15s;}
+.s6-goal-card:hover{border-color:rgba(123,92,255,.5);}
+.s6-goal-card.is-on{background:rgba(123,92,255,.14);border-color:#7b5cff;color:#fff;}
+.s6-goal-ic{font-size:1.2rem;flex:0 0 auto;}
+/* TASK 7 — Sharing */
+.s6-share-btns{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.s6-qr{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:14px;}
+.s6-qr-box{width:120px;height:120px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:3rem;color:#8a8a92;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);}
+.s6-qr-cap{font-size:.75rem;color:#8a8a92;}
+/* TASK 8 — Link Hub */
+.s6-link-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.s6-link-card{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:14px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);position:relative;}
+.s6-link-card.is-set{border-color:rgba(123,92,255,.35);}
+.s6-link-ic{font-size:1.3rem;color:#b980ff;}
+.s6-link-name{font-weight:600;font-size:.9rem;color:#fff;}
+.s6-link-empty{font-size:.78rem;color:#8a8a92;}
+.s6-link-val{font-size:.78rem;color:#9fe8c6;word-break:break-all;}
+.s6-link-edit{margin-top:6px;align-self:flex-start;background:transparent;border:1px solid rgba(255,255,255,.2);
+  color:#cfcfd6;border-radius:8px;padding:4px 12px;font-size:.75rem;cursor:pointer;}
+.s6-link-edit:hover{border-color:#7b5cff;color:#fff;}
+/* TASK 9 — Media Organizer */
+.s6-media-buckets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.s6-media-bucket{font-size:.78rem;padding:5px 12px;border-radius:99px;color:#cfcfd6;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);}
+.s6-media-suggestions{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+/* TASK 11 — Dashboard */
+.s6-dash-head{margin-bottom:16px;}
+.s6-dash-head h2{margin:0;font-size:1.4rem;color:#fff;}
+.s6-dash-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.s6-dash-score{grid-column:1 / -1;}
+.s6-dash-cell{min-width:0;}
+/* Responsive (tablet + mobile) */
+@media (max-width:900px){
+  .s6-dash-grid{grid-template-columns:1fr;}
+  .s6-score-list{grid-template-columns:1fr;}
+}
+@media (max-width:640px){
+  .s6-score-head{flex-direction:column;text-align:center;}
+  .s6-check-head{flex-direction:column;align-items:flex-start;gap:4px;}
+  .s6-share-btns .s5-btn{flex:1 1 auto;}
+  .s6-badge-tip{width:150px;}
+}
