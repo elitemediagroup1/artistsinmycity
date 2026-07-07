@@ -1,7 +1,7 @@
 # ArtistsInMyCity - Build Status
 
 **Current Version:** v2.0 (Sprint 4 - Product Maturity)
-**Last Updated:** 2026-07-07
+**Last Updated:2026-07-07
 **Date:** 2026-07-07
 
 This file is mandatory after every sprint. It records what is done, what
@@ -55,6 +55,26 @@ merch_click, ticket_click
 - Roadie personality (contextual greetings, idle nudge), footer "Built with love in the USA"
 
 ---
+
+## Sprint 5 (Analytics + IndexNow) - 2026-07-07
+
+Infrastructure sprint. No UI changes, no layout changes, no redesign.
+
+- [x] Google Analytics Installed (GA4 measurement ID G-HPSSBYPFLP)
+- [x] Custom Events Created (trackEvent utility + named helpers)
+- [x] IndexNow Service Added (services/indexnow.ts + Netlify function)
+- [x] Verification File Added (root key .txt returns the key)
+- [x] Robots Verified (allow all + sitemap reference)
+- [x] Sitemap Verified (added onboarding + exhibit builder; 68 URLs)
+
+Implementation notes:
+- GA4 loads once site-wide via the shared assets/js/analytics.js utility.
+  It self-guards against duplicate installs and duplicate gtag.js requests.
+- analytics.js is loaded on every page through the shared integrations.js
+  loader; the two pages without integrations.js reference it directly.
+- All raw gtag() calls are centralized behind AIMC.trackEvent(name, params).
+- IndexNow key is read from environment variables only and never shipped to
+  the browser. Publish hooks are stubbed (disabled) until the backend is live.
 
 ## Outstanding Features
 - Wire real Roadie character art (2 approved PNGs) into avatar; currently gradient "R" + TODO
