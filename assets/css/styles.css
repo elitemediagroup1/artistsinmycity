@@ -695,3 +695,8 @@
   .s6-share-btns .s5-btn{flex:1 1 auto;}
   .s6-badge-tip{width:150px;}
 }
+
+/* Sprint 6 section wrapper — ensure full-width stacking inside the
+   studio-page / xb-page CSS grid (prevents column collisions). */
+.s6-section{grid-column:1 / -1;margin:0 0 22px;}
+.studio-page > .s6-section,.xb-page > .s6-section{grid-column:1 / -1;}
