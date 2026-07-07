@@ -95,3 +95,89 @@
     if (cityMeta) { Loop.cityView({ city: cityMeta.getAttribute('data-city') }); }
   });
 })(window);
+
+
+/* SPRINT5_LOOP_EXTENSION */
+/*
+ * Sprint 5 (v3.0) Loop event expansion.
+ * Additive only: registers new placeholder event names, exposes a track()
+ * alias, adds named helpers, and mirrors every Loop emit to GA4 via
+ * AIMC.trackEvent when the analytics utility is present. No backend needed.
+ */
+(function (window) {
+  'use strict';
+  var Loop = window.AIMCLoop = window.AIMCLoop || {};
+
+  var NEW_EVENTS = [
+    'roadie_memory_updated',
+    'roadie_preference_saved',
+    'artist_theme_changed',
+    'collection_created',
+    'collection_updated',
+    'collection_previewed',
+    'collection_reordered',
+    'media_alt_text_requested',
+    'media_caption_requested',
+    'media_cover_suggested',
+    'fan_interest_saved',
+    'fan_home_personalized',
+    'timeline_event_added',
+    'recommendation_viewed',
+    'notification_opened',
+    'command_palette_opened',
+    'command_palette_action_selected'
+  ];
+
+  // Register new event names on the events registry, if present.
+  try {
+    Loop.events = Loop.events || {};
+    NEW_EVENTS.forEach(function (n) {
+      if (typeof Loop.events[n] === 'undefined') { Loop.events[n] = n; }
+    });
+  } catch (e) {}
+
+  // Core emit that never throws. Prefer the existing emit; otherwise fall back
+  // to aimcTrack. Always mirror to GA4 through the analytics utility.
+  function loopTrack(name, payload) {
+    if (!name) { return; }
+    payload = payload || {};
+    try {
+      if (typeof Loop.emit === 'function') { Loop.emit(name, payload); }
+      else if (typeof window.aimcTrack === 'function') { window.aimcTrack(name, payload); }
+    } catch (e) {}
+    // Mirror to GA (analytics.js has its own guard; safe if absent).
+    try {
+      if (window.AIMC && typeof window.AIMC.trackEvent === 'function') {
+        window.AIMC.trackEvent(name, payload);
+      }
+    } catch (e) {}
+  }
+
+  // Public track() alias required by the Sprint 5 spec.
+  if (typeof Loop.track !== 'function') { Loop.track = loopTrack; }
+
+  // Named helpers (camelCase) for the new events.
+  var helpers = {
+    roadieMemoryUpdated:        function (p) { loopTrack('roadie_memory_updated', p); },
+    roadiePreferenceSaved:      function (p) { loopTrack('roadie_preference_saved', p); },
+    artistThemeChanged:         function (p) { loopTrack('artist_theme_changed', p); },
+    collectionCreated:          function (p) { loopTrack('collection_created', p); },
+    collectionUpdated:          function (p) { loopTrack('collection_updated', p); },
+    collectionPreviewed:        function (p) { loopTrack('collection_previewed', p); },
+    collectionReordered:        function (p) { loopTrack('collection_reordered', p); },
+    mediaAltTextRequested:      function (p) { loopTrack('media_alt_text_requested', p); },
+    mediaCaptionRequested:      function (p) { loopTrack('media_caption_requested', p); },
+    mediaCoverSuggested:        function (p) { loopTrack('media_cover_suggested', p); },
+    fanInterestSaved:           function (p) { loopTrack('fan_interest_saved', p); },
+    fanHomePersonalized:        function (p) { loopTrack('fan_home_personalized', p); },
+    timelineEventAdded:         function (p) { loopTrack('timeline_event_added', p); },
+    recommendationViewed:       function (p) { loopTrack('recommendation_viewed', p); },
+    notificationOpened:         function (p) { loopTrack('notification_opened', p); },
+    commandPaletteOpened:       function (p) { loopTrack('command_palette_opened', p); },
+    commandPaletteActionSelected: function (p) { loopTrack('command_palette_action_selected', p); }
+  };
+  Object.keys(helpers).forEach(function (k) {
+    if (typeof Loop[k] !== 'function') { Loop[k] = helpers[k]; }
+  });
+
+})(window);
