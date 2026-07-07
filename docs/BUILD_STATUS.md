@@ -76,6 +76,38 @@ Implementation notes:
 - IndexNow key is read from environment variables only and never shipped to
   the browser. Publish hooks are stubbed (disabled) until the backend is live.
 
+## Sprint 5 (v3.0 - Artist Intelligence + Personalization) - 2026-07-07
+
+Intelligence + personalization foundation. No redesign, no route changes.
+
+Completed:
+- [x] Roadie Memory system (assets/js/roadie-memory.js, localStorage)
+- [x] Exhibit Theme Builder (6 curated themes, persists, previews)
+- [x] Digital Exhibit language pass (Exhibit / My Studio terminology)
+- [x] Collections UI (create/edit/preview/reorder, localStorage)
+- [x] Media Intelligence placeholders (Roadie suggestions + action buttons)
+- [x] Fan Personalization foundation (8 personalized sections, empty states)
+- [x] Audience Timeline component (reusable, local events)
+- [x] Recommendation engine placeholder (assets/js/recommendations.js)
+- [x] Notification Center (nav bell, panel, localStorage, empty state)
+- [x] Universal Command Palette (Ctrl/Cmd+K and '/', keyboard nav)
+- [x] Component consolidation (window.AIMCComponents render helpers)
+- [x] Loop event expansion (17 new events + AIMCLoop.track alias)
+- [x] Docs: ROADIE_MEMORY, DIGITAL_EXHIBIT_THEMES, RECOMMENDATION_ENGINE,
+      COMMAND_PALETTE, LOOP_EVENTS
+
+Also (cleanup this cycle):
+- [x] Removed placeholder-indexnow-key.txt (unreferenced)
+- [x] Removed redundant direct GA tags; GA now loads once via shared loader
+
+Architecture notes:
+- New shared script assets/js/sprint5.js loads site-wide through the
+  integrations.js loader (with roadie-memory.js + recommendations.js), same
+  pattern as analytics.js. The two pages without integrations.js reference them
+  directly. sprint5.js self-guards against double init.
+- Everything uses localStorage/placeholders; interfaces are shaped so Neon,
+  Clerk, Claude, and EMG LOOP can replace placeholders without API changes.
+
 ## Outstanding Features
 - Wire real Roadie character art (2 approved PNGs) into avatar; currently gradient "R" + TODO
 - Extend `experience.js` search + Roadie toasts to remaining secondary pages (categories, cities index, legal, creators)
