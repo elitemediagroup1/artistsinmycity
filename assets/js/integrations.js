@@ -51,3 +51,29 @@
     if (window.ttq) window.ttq.track(eventName, payload || {});
   };
 })();
+
+/* SPRINT6_LOADER — Artist Success System (v3.5) */
+(function () {
+  if (window.__aimcSprint6Loading) return;
+  window.__aimcSprint6Loading = true;
+  function inject(src, attr) {
+    if (document.querySelector('script[' + attr + ']')) return;
+    var s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    s.setAttribute(attr, '1');
+    (document.body || document.head).appendChild(s);
+  }
+  function start() {
+    /* artist-success depends on sprint5 components; load after a tick so
+       AIMCComponents / AIMCLoop / RoadieMemory are available. */
+    setTimeout(function () {
+      inject('/assets/js/artist-success.js', 'data-aimc-success');
+    }, 0);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
