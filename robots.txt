@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://artistsinmycity.com/sitemap.xml
