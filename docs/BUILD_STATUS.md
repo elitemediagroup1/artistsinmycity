@@ -1,6 +1,6 @@
 # ArtistsInMyCity - Build Status
 
-**Current Version:** v2.0 (Sprint 4 - Product Maturity)
+**Current Version:** v3.5 (Sprint 6 - Artist Success System)
 **Last Updated:2026-07-07
 **Date:** 2026-07-07
 
@@ -107,6 +107,32 @@ Architecture notes:
   directly. sprint5.js self-guards against double init.
 - Everything uses localStorage/placeholders; interfaces are shaped so Neon,
   Clerk, Claude, and EMG LOOP can replace placeholders without API changes.
+
+## Sprint 6 (v3.5 - Artist Success System) - 2026-07-07
+
+Artist Success System complete. Turns the platform into a creative operating
+system focused on Digital Exhibit success. All placeholders + localStorage today;
+clean interfaces for Neon + EMG LOOP later. See `docs/ARTIST_SUCCESS_SYSTEM.md`.
+
+- **Digital Exhibit Score** (Task 1): weighted score (Needs Work / Good Start /
+  Almost Ready / Roadie Approved) with per-section breakdown + Roadie recommendation.
+- **Artist Success Checklist** (Task 2): 11-step launch checklist, launch %, Roadie encouragement.
+- **Founding Artist Program** (Task 3): ribbon + badge + certificate placeholder.
+- **Artist Badge System** (Task 4): reusable badge chips (Founding, Verified, Featured,
+  Roadie's Pick, Community Favorite, Emerging, Exhibit of the Week).
+- **Roadie Weekly Report** (Task 5): placeholder metric cards + empty state + advice.
+- **Artist Goals** (Task 6): 8 goals; Roadie coaching adapts; persisted.
+- **Exhibit Sharing** (Task 7): Copy/Share/QR/Download QR/OG preview (placeholders).
+- **Link Hub** (Task 8): Listen/Watch/Visit/Book/Support/Donate/Website/Social + empty states.
+- **Media Organizer** (Task 9): suggested buckets + placeholder Roadie suggestions (no real AI).
+- **Visitor Journey** (Task 10): placeholder Loop events, mirrored to GA helper.
+- **Artist Success Dashboard** (Task 11): unified overview card.
+- **Docs** (Tasks 12-13): `ARTIST_SUCCESS_SYSTEM.md` added; this file bumped to v3.5.
+
+New files: `assets/js/artist-success.js`, `docs/ARTIST_SUCCESS_SYSTEM.md`.
+Modified: `assets/css/styles.css` (s6- styles), `assets/js/integrations.js`
+(SPRINT6_LOADER), `dashboard/artist-studio.html` + `pages/exhibit-builder.html` (mounts).
+Guard: `window.__AIMC_SUCCESS__`; loader guard `data-aimc-success`. No duplicate CSS/JS.
 
 ## Outstanding Features
 - Wire real Roadie character art (2 approved PNGs) into avatar; currently gradient "R" + TODO
