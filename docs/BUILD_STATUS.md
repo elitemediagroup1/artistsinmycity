@@ -1,6 +1,6 @@
 # ArtistsInMyCity - Build Status
 
-**Current Version:** v3.5 (Sprint 6 - Artist Success System)
+**Current Version:** v4.0 (Sprint 7 - The Digital Exhibit Experience)
 **Last Updated:2026-07-07
 **Date:** 2026-07-07
 
@@ -133,6 +133,34 @@ New files: `assets/js/artist-success.js`, `docs/ARTIST_SUCCESS_SYSTEM.md`.
 Modified: `assets/css/styles.css` (s6- styles), `assets/js/integrations.js`
 (SPRINT6_LOADER), `dashboard/artist-studio.html` + `pages/exhibit-builder.html` (mounts).
 Guard: `window.__AIMC_SUCCESS__`; loader guard `data-aimc-success`. No duplicate CSS/JS.
+
+## Sprint 7 (v4.0 - The Digital Exhibit Experience) - 2026-07-07
+
+The Digital Exhibit Experience complete. Makes the platform feel like a premium
+digital museum \u2014 no redesign, no new routes. See `docs/DIGITAL_EXHIBIT_PLATFORM.md`.
+All placeholders + localStorage today; clean interfaces for Claude + Neon + EMG LOOP.
+
+- **Digital Exhibit Designer** (Task 1): section show/hide/move/duplicate + live
+  preview panel (desktop/tablet/mobile); order persists locally.
+- **Premium Exhibit Themes** (Task 2): six complete theme experiences with instant
+  preview + Roadie recommendation.
+- **Roadie Design Mode** (Task 3): recommendation cards (Apply/Preview/Ignore/Save).
+- **Public Digital Exhibit Experience** (Task 4): gallery-like presentation, breathing layout.
+- **Collection Experience** (Task 5): collections as miniature exhibits + empty states.
+- **Roadie Exhibit Review** (Task 6): 11-category placeholder review.
+- **Exhibit Story Mode** (Task 7): Introduction / Inspiration / Process / Behind The Work / Final Thoughts.
+- **Visitor Experience** (Task 8): Continue Exploring, Related, Nearby, Picks, Recently Viewed, Save/Follow/Share/QR.
+- **Roadie Creative Insights** (Task 9): clearly-marked preview cards, no fabricated analytics.
+- **Micro-interactions** (Task 10): elegant transitions using existing tokens; respects reduced-motion.
+- **Component library** (Task 11): shared exhibit/collection/suggestion/insight/theme/story/share/QR helpers.
+- **Loop events** (Task 12): 12 new placeholder events mirrored to GA.
+- **Docs** (Task 13): `DIGITAL_EXHIBIT_PLATFORM.md` added; this file bumped to v4.0.
+
+New files: `assets/js/exhibit-experience.js`, `docs/DIGITAL_EXHIBIT_PLATFORM.md`.
+Modified: `assets/css/styles.css` (s7- styles), `assets/js/integrations.js`
+(SPRINT7_LOADER), `dashboard/artist-studio.html`, `pages/exhibit-builder.html`,
+`pages/artist-coming-soon.html` (mounts). Guard: `window.__AIMC_EXPERIENCE__`;
+loader guard `data-aimc-experience`. No duplicate CSS/JS/HTML.
 
 ## Outstanding Features
 - Wire real Roadie character art (2 approved PNGs) into avatar; currently gradient "R" + TODO
