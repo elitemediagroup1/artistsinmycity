@@ -1,128 +1,97 @@
 /* Roadie(TM) - AI Artist Guide & City Concierge
-   Floating assistant widget. Frontend placeholder only.
-   TODO: Wire sendRoadieMessage() to /.netlify/functions/claude-assistant
-   CLAUDE_API_KEY must remain server-side only. Never expose in frontend. */
-(function () {
+   Floating widget for ArtistsInMyCity. No real Claude call yet.
+   TODO: wire sendRoadieMessage() to server-side Claude endpoint.
+   IMPORTANT: CLAUDE_API_KEY must remain server-side only. Never expose in frontend. */
+(function(){
   "use strict";
-  if (window.__roadieLoaded) return;
-  window.__roadieLoaded = true;
+  if (window.__roadieLoaded) return; window.__roadieLoaded = true;
 
-  var script = document.currentScript;
-  var context = (script && script.getAttribute("data-roadie-context")) || "public";
-
-  var CONTEXT_INTRO = {
-    "public": "🎸 Hey! I'm Roadie. Ready to discover something incredible today?",
-    "city": "🎸 Hey! I'm Roadie, your city arts concierge. Want to explore this city's creative scene?",
-    "events": "🎸 Hey! I'm Roadie. Looking for live music, gallery openings, or art walks near you?",
-    "dashboard": "🎸 Hey! I'm Roadie, your profile coach. Want help making your artist profile shine?"
-  };
-
-  var CONTEXT_QUICK = {
-    "public": ["Find Artists", "Find Events", "Explore Cities", "Art Venues", "Improve My Profile", "SEO Help"],
-    "city": ["Find Artists", "Find Events", "Art Venues", "City Guide", "Improve My Profile", "SEO Help"],
-    "events": ["Find Events", "Gallery Openings", "Live Music", "Art Walks", "Find Artists", "Explore Cities"],
-    "dashboard": ["Improve My Profile", "SEO Help", "Grow My Audience", "Media Tips", "Find Events", "Explore Cities"]
-  };
-
-  var QUICK_ROUTES = {
-    "Find Artists": "/pages/discover.html",
-    "Find Events": "/pages/events.html",
-    "Explore Cities": "/pages/cities.html",
-    "Art Venues": "/pages/discover.html",
-    "Gallery Openings": "/pages/events.html",
-    "Live Music": "/pages/events.html",
-    "Art Walks": "/pages/events.html"
-  };
-
-  var intro = CONTEXT_INTRO[context] || CONTEXT_INTRO.public;
-  var quick = CONTEXT_QUICK[context] || CONTEXT_QUICK.public;
-
-  // TODO replace with approved Roadie character asset:
-  // /assets/characters/roadie/roadie-default.png (or .webp)
-  var AVATAR = "<span class=\"roadie-avatar-initial\">R</span>";
-
-  function el(tag, cls, html) {
-    var n = document.createElement(tag);
-    if (cls) n.className = cls;
-    if (html != null) n.innerHTML = html;
-    return n;
+  var CONTEXT = (document.currentScript && document.currentScript.getAttribute("data-roadie-context")) || "public";
+  // Fallback: read from any roadie script tag
+  if (!CONTEXT || CONTEXT === "public") {
+    var tag = document.querySelector('script[data-roadie-context]');
+    if (tag) CONTEXT = tag.getAttribute("data-roadie-context") || "public";
   }
 
-  var fab = el("button", "roadie-fab");
-  fab.setAttribute("aria-label", "Ask Roadie");
-  fab.innerHTML =
-    '<span class="roadie-avatar">' + AVATAR + '<span class="roadie-dot"></span></span>' +
-    '<span class="roadie-fab-label">Ask Roadie</span>';
+  var GREETINGS = {
+    "public":    "\uD83C\uDFB8 Hey! I'm Roadie. Need help finding artists?",
+    "city":      "\uD83C\uDFB8 Looking for local artists? I can help you explore this city.",
+    "events":    "\uD83C\uDFB8 Looking for live music tonight? Let's find something.",
+    "dashboard": "\uD83C\uDFB8 Need help publishing today? I'm your studio assistant.",
+    "discover":  "\uD83C\uDFB8 Hey! Want me to surface something incredible?",
+    "about":     "\uD83C\uDFB8 Hey! Curious about ArtistsInMyCity? Ask me anything."
+  };
+  var QUICK = {
+    "public":    ["Find Artists","Find Events","Explore Cities","Art Venues"],
+    "city":      ["Find Venues","Find Galleries","Upcoming Events","Local Artists"],
+    "events":    ["Live Music Tonight","This Weekend","Near Me","Free Events"],
+    "dashboard": ["Write Bio","Improve SEO","Generate Gallery","Publish"],
+    "discover":  ["Trending","Near Me","New Exhibits","Surprise Me"],
+    "about":     ["Find Artists","Explore Cities","Join","SEO Help"]
+  };
 
-  var panel = el("div", "roadie-panel");
-  panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "Roadie AI Artist Guide");
+  function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+
+  // ---- Build UI ----
+  var root = el("div","roadie-root");
+  var launcher = el("button","roadie-launcher","<span class='roadie-ava'>R</span><span class='roadie-launch-text'>Ask Roadie</span><span class='roadie-dot'></span>");
+  launcher.setAttribute("aria-label","Ask Roadie");
+
+  var panel = el("div","roadie-panel");
   panel.innerHTML =
-    '<div class="roadie-header">' +
-      '<span class="roadie-avatar">' + AVATAR + '<span class="roadie-dot"></span></span>' +
-      '<span class="roadie-title"><b>Roadie</b><small>AI Artist Guide</small></span>' +
-      '<span class="roadie-header-status"><i></i>Online</span>' +
-      '<button class="roadie-close" aria-label="Close Roadie">\u00d7</button>' +
-    '</div>' +
-    '<div class="roadie-log" data-roadie-log></div>' +
-    '<div class="roadie-quick" data-roadie-quick></div>' +
-    '<form class="roadie-input" data-roadie-form>' +
-      '<input type="text" placeholder="Ask Roadie anything..." data-roadie-input autocomplete="off">' +
-      '<button type="submit">Send</button>' +
-    '</form>';
+    "<div class='roadie-head'>"+
+      "<span class='roadie-ava sm'>R</span>"+
+      "<div class='roadie-head-txt'><strong>Roadie</strong><small>AI Artist Guide</small></div>"+
+      "<span class='roadie-dot online' title='Online'></span>"+
+      "<button class='roadie-close' aria-label='Close'>&times;</button>"+
+    "</div>"+
+    "<div class='roadie-body' id='roadieBody'></div>"+
+    "<div class='roadie-quick' id='roadieQuick'></div>"+
+    "<form class='roadie-input' id='roadieForm'>"+
+      "<input type='text' id='roadieInput' placeholder='Ask Roadie anything...' autocomplete='off'>"+
+      "<button type='submit' aria-label='Send'>&#10148;</button>"+
+    "</form>";
 
-  document.body.appendChild(fab);
-  document.body.appendChild(panel);
+  root.appendChild(panel); root.appendChild(launcher);
+  document.body.appendChild(root);
 
-  var log = panel.querySelector("[data-roadie-log]");
-  var quickWrap = panel.querySelector("[data-roadie-quick]");
-  var form = panel.querySelector("[data-roadie-form]");
-  var input = panel.querySelector("[data-roadie-input]");
-  var closeBtn = panel.querySelector(".roadie-close");
+  var body = panel.querySelector("#roadieBody");
+  var quick = panel.querySelector("#roadieQuick");
+  var form = panel.querySelector("#roadieForm");
+  var input = panel.querySelector("#roadieInput");
 
-  function addMsg(text, who) {
-    var m = el("div", "roadie-msg " + (who === "user" ? "user" : "bot"));
+  function addMsg(text, who){
+    var m = el("div","roadie-msg "+(who||"bot"));
     m.textContent = text;
-    log.appendChild(m);
-    log.scrollTop = log.scrollHeight;
-    return m;
+    body.appendChild(m);
+    body.scrollTop = body.scrollHeight;
   }
 
-  // Placeholder AI responder. Replace with real Claude backend call.
-  function sendRoadieMessage(message) {
-    addMsg(message, "user");
-    if (QUICK_ROUTES[message]) {
-      addMsg("Taking you to " + message + "...", "bot");
-      setTimeout(function () { window.location.href = QUICK_ROUTES[message]; }, 500);
-      return;
-    }
-    // TODO: real backend
-    // fetch("/.netlify/functions/claude-assistant", {method:"POST",
-    //   body: JSON.stringify({ message: message, context: context })})
-    //   .then(r => r.json()).then(d => addMsg(d.reply, "bot"));
-    setTimeout(function () {
-      addMsg("Thanks! Roadie's live AI is opening soon. In the meantime, explore artists, events, and cities from the menu above.", "bot");
-    }, 400);
+  // Placeholder responder. Replace with server-side Claude call later.
+  function sendRoadieMessage(text){
+    addMsg(text,"user");
+    setTimeout(function(){
+      addMsg("Thanks! Roadie's live AI is opening soon \u2014 for now, explore Artists, Cities and Events from the menu.","bot");
+    }, 500);
   }
   window.sendRoadieMessage = sendRoadieMessage;
 
-  quick.forEach(function (label) {
-    var b = el("button", null, label);
-    b.type = "button";
-    b.addEventListener("click", function () { sendRoadieMessage(label); });
-    quickWrap.appendChild(b);
-  });
+  var opened = false, idleTimer=null;
+  function open(){ opened=true; root.classList.add("open"); launcher.classList.remove("nudge"); if(body.childElementCount===0) greet(); input.focus(); }
+  function close(){ opened=false; root.classList.remove("open"); }
+  function greet(){
+    addMsg(GREETINGS[CONTEXT]||GREETINGS.public,"bot");
+    (QUICK[CONTEXT]||QUICK.public).forEach(function(q){
+      var b=el("button","roadie-chip",q);
+      b.addEventListener("click",function(){ sendRoadieMessage(q); });
+      quick.appendChild(b);
+    });
+  }
 
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var v = input.value.trim();
-    if (!v) return;
-    input.value = "";
-    sendRoadieMessage(v);
-  });
+  launcher.addEventListener("click", function(){ opened?close():open(); });
+  panel.querySelector(".roadie-close").addEventListener("click", close);
+  form.addEventListener("submit", function(e){ e.preventDefault(); var v=input.value.trim(); if(!v)return; input.value=""; sendRoadieMessage(v); });
 
-  function open() { panel.classList.add("open"); fab.style.display = "none"; if (!log.childNodes.length) addMsg(intro, "bot"); input.focus(); }
-  function close() { panel.classList.remove("open"); fab.style.display = "flex"; }
-  fab.addEventListener("click", open);
-  closeBtn.addEventListener("click", close);
+  // Idle nudge: if ignored ~20s, tiny bounce (once). No spam.
+  idleTimer = setTimeout(function(){ if(!opened) launcher.classList.add("nudge"); }, 20000);
 })();
