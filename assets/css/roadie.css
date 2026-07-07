@@ -1,0 +1,32 @@
+/* Roadie floating AI widget styles */
+.roadie-fab{position:fixed;right:22px;bottom:22px;z-index:9999;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(12,16,26,.92);backdrop-filter:blur(14px);color:#fff;cursor:pointer;font-weight:800;font-size:13px;box-shadow:0 12px 40px rgba(123,77,255,.35),0 0 0 1px rgba(255,63,156,.18)}
+.roadie-fab:hover{box-shadow:0 16px 50px rgba(21,151,255,.45),0 0 0 1px rgba(255,63,156,.3)}
+.roadie-avatar{width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;background:linear-gradient(135deg,#ff3f9c,#7b4dff 55%,#1597ff);position:relative;overflow:hidden}
+.roadie-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.roadie-dot{width:10px;height:10px;border-radius:50%;background:#22e07a;border:2px solid #0c101a;position:absolute;right:0;bottom:0}
+.roadie-fab-label{white-space:nowrap}
+
+.roadie-panel{position:fixed;right:22px;bottom:22px;z-index:10000;width:360px;max-width:calc(100vw - 24px);height:560px;max-height:calc(100vh - 40px);display:none;flex-direction:column;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:rgba(10,13,22,.98);backdrop-filter:blur(18px);box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.roadie-panel.open{display:flex}
+.roadie-header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid rgba(255,255,255,.12);background:linear-gradient(120deg,rgba(255,63,156,.18),rgba(21,151,255,.18))}
+.roadie-header .roadie-avatar{width:44px;height:44px}
+.roadie-title{flex:1}
+.roadie-title b{display:block;font-size:16px}
+.roadie-title small{color:#9ca8bb;font-size:12px}
+.roadie-header-status{display:flex;align-items:center;gap:6px;font-size:11px;color:#22e07a;font-weight:800}
+.roadie-header-status i{width:8px;height:8px;border-radius:50%;background:#22e07a;display:inline-block}
+.roadie-close{background:none;border:0;color:#c8d2e6;font-size:22px;cursor:pointer;line-height:1;padding:4px 8px}
+.roadie-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.roadie-msg{max-width:85%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.45}
+.roadie-msg.bot{align-self:flex-start;background:rgba(255,255,255,.08)}
+.roadie-msg.user{align-self:flex-end;background:linear-gradient(135deg,rgba(255,63,156,.32),rgba(123,77,255,.32));color:#fff}
+.roadie-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
+.roadie-quick button{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#e2e8f5;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
+.roadie-quick button:hover{border-color:rgba(80,186,255,.6);color:#fff}
+.roadie-input{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(255,255,255,.12)}
+.roadie-input input{flex:1;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;padding:12px 16px;font-size:14px}
+.roadie-input button{border:0;border-radius:999px;padding:0 18px;font-weight:900;color:#fff;background:linear-gradient(135deg,#ff3f9c,#7b4dff,#1597ff);cursor:pointer}
+@media(max-width:480px){
+  .roadie-panel{right:8px;bottom:8px;width:calc(100vw - 16px);height:calc(100vh - 80px)}
+  .roadie-fab{right:14px;bottom:14px}
+}
