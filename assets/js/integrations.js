@@ -77,3 +77,22 @@
     start();
   }
 })();
+
+/* SPRINT7_LOADER — Digital Exhibit Experience (v4.0) */
+(function () {
+  if (window.__aimcSprint7Loading) return;
+  window.__aimcSprint7Loading = true;
+  function inject(src, attr) {
+    if (document.querySelector('script[' + attr + ']')) return;
+    var s = document.createElement('script');
+    s.src = src; s.defer = true; s.setAttribute(attr, '1');
+    (document.body || document.head).appendChild(s);
+  }
+  function start() {
+    /* load after a tick so sprint5 components + artist-success are available */
+    setTimeout(function () {
+      inject('/assets/js/exhibit-experience.js', 'data-aimc-experience');
+    }, 0);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
