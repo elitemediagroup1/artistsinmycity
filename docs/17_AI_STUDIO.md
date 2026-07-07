@@ -1,0 +1,32 @@
+# 17 AI Studio
+
+## Required Reading
+This document is part of the official ArtistsInMyCity product specification. Any developer or AI agent must preserve the current product direction: Spotify meets MoMA, premium dark creative discovery, no fake artists, no exposed secrets, no Supabase, Neon as database, Clerk placeholders, Claude as Roadie, Stripe payments, GitHub/Netlify deployment, IndexNow, analytics, and EMG LOOP event webhooks.
+
+## Non-Negotiable Implementation Rules
+- Do not redesign the project unless explicitly instructed.
+- Do not invent fake artist profiles, fake artist names, fake biographies, fake work, or fake quotes.
+- If real artist data is not available, use polished states such as “Artist profiles opening soon,” “Sponsored artist slot,” or “Reserve this placement.”
+- Every nav item, card CTA, dashboard button, footer link, legal link, and portal action must route somewhere or open a polished preview state.
+- Never expose API keys in client code.
+- Any AI feature must appear to the user as Roadie, not Claude.
+- Every unfinished third-party feature must have complete UI plus integration placeholders.
+
+
+
+## Purpose
+AI Studio is where artists collaborate with Roadie to improve their pages.
+
+## Required Tools
+- Rewrite bio.
+- Generate SEO title/description.
+- Generate AEO answers.
+- Suggest page layout.
+- Caption images.
+- Organize gallery.
+- Build booking CTA.
+- Write merch descriptions.
+- Generate social snippets.
+
+## Safety
+Claude API key must only run server-side. Outputs should be previewed before publishing.
