@@ -91,7 +91,7 @@
 @media(max-width:640px){.portal-tiles{grid-template-columns:1fr}}
 
 
-/* ============ SPRINT 3 ÃÂ¢ÃÂÃÂ PREMIUM PRODUCT PASS ============ */
+/* ============ SPRINT 3 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ PREMIUM PRODUCT PASS ============ */
 
 /* --- Cinematic hero --- */
 .hero.hero-cinematic{position:relative;overflow:hidden;min-height:720px;display:flex;align-items:center;isolation:isolate;padding:0}
@@ -135,7 +135,7 @@
 .footer .footer-usa{display:block;margin-top:14px;font-size:12px;opacity:.6;text-align:center}
 
 
-/* ===== SPRINT 3 Ã¢ÂÂ City tourism-board pages ===== */
+/* ===== SPRINT 3 ÃÂ¢ÃÂÃÂ City tourism-board pages ===== */
 .city-hero-cine{position:relative;overflow:hidden;min-height:460px;display:flex;align-items:center;isolation:isolate}
 .city-hero-bg{position:absolute;inset:0;background:var(--scene);background-size:cover;background-position:center;transform:scale(1.05)}
 .city-hero-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 80% at 75% 20%,rgba(138,92,255,.25),transparent 60%)}
@@ -181,7 +181,7 @@
 @media(max-width:820px){.feature-panel,.feature-panel.reverse{grid-template-columns:1fr}.feature-panel.reverse .feature-photo{order:0}.roadie-recs .rec-row{grid-template-columns:1fr}}
 
 
-/* ===== SPRINT 3 â Discover / Events / About ===== */
+/* ===== SPRINT 3 Ã¢ÂÂ Discover / Events / About ===== */
 /* Discover masonry */
 .discover-hero .page-hero-inner h1,.about-hero .page-hero-inner h1{font-size:clamp(34px,5vw,60px);font-weight:900}
 .discover-toolbar{margin-bottom:22px}
@@ -228,7 +228,7 @@
 @media(max-width:520px){.about-grid{grid-template-columns:1fr}}
 
 
-/* ===== SPRINT 3 — Premium blank exhibit ===== */
+/* ===== SPRINT 3 â Premium blank exhibit ===== */
 .exhibit-layout{display:grid;grid-template-columns:280px 1fr;gap:26px}
 .exhibit-side{position:sticky;top:90px;align-self:start;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:24px;text-align:center}
 .exhibit-avatar{width:110px;height:110px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;font-weight:900;font-size:40px;color:#0b0b12;background:linear-gradient(135deg,#ff5ca8,#8a5cff 60%,#3ec6ff)}
@@ -247,3 +247,20 @@
 .exhibit-block.roadie-tip{background:linear-gradient(135deg,rgba(255,92,168,.1),rgba(138,92,255,.1))}
 .exhibit-block .muted{opacity:.55;font-size:13px;margin-top:12px}
 @media(max-width:820px){.exhibit-layout{grid-template-columns:1fr}.exhibit-side{position:static}.exhibit-media-row{grid-template-columns:1fr}}
+
+
+/* ===== SPRINT 3 — Roadie AI Studio ===== */
+.studio-greet{padding:48px 0 8px}
+.studio-greet-inner{max-width:1100px;margin:0 auto;padding:0 32px}
+.studio-greet h1{font-size:clamp(30px,4.5vw,52px);font-weight:900;margin:.15em 0}
+.studio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.studio-card{text-align:left;cursor:pointer;padding:22px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#e9e9f2;display:flex;flex-direction:column;gap:6px;transition:transform .3s,border-color .3s,box-shadow .3s}
+.studio-card:hover{transform:translateY(-5px);border-color:#8a5cff;box-shadow:0 16px 44px rgba(138,92,255,.25)}
+.studio-ico{font-size:26px}
+.studio-card strong{font-size:16px}
+.studio-card small{opacity:.65;font-size:12.5px;line-height:1.4}
+.studio-nav{display:flex;flex-wrap:wrap;gap:12px}
+.studio-nav-item{padding:12px 20px;border-radius:14px;background:linear-gradient(120deg,rgba(255,92,168,.1),rgba(62,198,255,.08));border:1px solid rgba(255,255,255,.1);font-weight:700;text-decoration:none;color:#e9e9f2;transition:.25s}
+.studio-nav-item:hover{transform:translateY(-3px);border-color:#8a5cff}
+@media(max-width:900px){.studio-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.studio-grid{grid-template-columns:1fr}}
