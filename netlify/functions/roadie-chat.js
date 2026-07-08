@@ -96,11 +96,12 @@ exports.handler = async function (event) {
     });
     payload = await apiRes.json();
   } catch (e) {
-    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error' });
+    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error', debug: { where: 'fetch', msg: String(e && e.message).slice(0,120) } });
   }
 
   if (!apiRes.ok) {
-    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error' });
+    var dtype = (payload && payload.error && payload.error.type) ? payload.error.type : null;
+    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error', debug: { where: 'upstream', status: apiRes.status, type: dtype } });
   }
 
   var reply = '';
