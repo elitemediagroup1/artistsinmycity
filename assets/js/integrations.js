@@ -96,3 +96,15 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
+
+/* SPRINT8_AUTH_LOADER - Clerk authentication (loads once site-wide) */
+(function loadClerkAuthOnce(){
+  try {
+    if (document.querySelector("script[data-aimc-clerk-auth]")) { return; }
+    var s = document.createElement("script");
+    s.src = "/assets/js/clerk-auth.js";
+    s.defer = true;
+    s.setAttribute("data-aimc-clerk-auth", "1");
+    (document.head || document.documentElement).appendChild(s);
+  } catch (e) {}
+})();
