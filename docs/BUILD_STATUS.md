@@ -1,6 +1,6 @@
 # ArtistsInMyCity - Build Status
 
-**Current Version:** v4.3 (Sprint 8.3 - Clerk security finalization + redirect-loop fix)
+**Current Version:** v4.4 (Sprint 10 - EMG LOOP webhook -> Neon event pipeline)
 **Last Updated:** 2026-07-08
 **Date:** 2026-07-08
 
@@ -10,6 +10,31 @@ remains, and the technical state of the platform.
 ---
 
 ## Completed Features
+
+### Sprint 10 (EMG LOOP Webhook -> Neon Event Pipeline)
+- **Server-side event pipeline added** (`netlify/functions/loop-event.js`):
+  - POST-only function that validates JSON, requires `event_name`, generates
+    `event_id` if absent, and adds `occurred_at` / `received_at` timestamps.
+  - Normalizes each event with `platform_id`, `site_id`, `site_url`,
+    `environment`, `source: web`, `anonymous_id`, `clerk_user_id`,
+    `role`, `session_id`, `page_url`, `referrer`, and `payload`.
+  - Signs each request with **HMAC-SHA256** and forwards it to
+    `EMG_LOOP_WEBHOOK_URL`. LOOP is the only component that writes to Neon.
+  - Missing config returns a safe `503`; upstream failures return `502`.
+    No stack traces, secrets, or Neon connection string are ever returned.
+- **Frontend pipeline** (`assets/js/loop-events.js`):
+  - `window.AIMCLoop.track()` (and `emit()`) now POST to
+    `/.netlify/functions/loop-event` while preserving GA4 mirroring.
+  - Failed sends queue in `localStorage` under `aimc.loop.queue` and retry on
+    page load and on the browser `online` event. `anonymous_id` persists in
+    `aimc.anon_id`.
+  - Additive only: no UI changes; Clerk, GA, Roadie, Google Maps, and existing
+    localStorage fallbacks are untouched.
+- **Docs:** added `docs/EMG_LOOP_WEBHOOK.md` (architecture, env vars, event
+  schema, event coverage, security model).
+- **Netlify env vars required:** `EMG_LOOP_WEBHOOK_URL`, `EMG_LOOP_WEBHOOK_SECRET`,
+  `AIMC_SITE_ID`, `AIMC_PLATFORM_ID` (not yet set -> function returns 503 and
+  events queue locally until configured).
 
 ### Sprint 8.3 (Clerk Security Finalization + Redirect-Loop Fix)
 - **Post-signup redirect loop FIXED** (`assets/js/clerk-auth.js`):
