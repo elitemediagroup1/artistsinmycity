@@ -950,3 +950,19 @@
   .meet-roadie .mr-portrait{animation:none}
   .hero.hero-cinematic .hero-slide{transition:opacity .3s ease}
 }
+
+/* Sprint 8.1 - Roadie hero slide framing fix (scoped to Roadie slide only) */
+/* Show the full cinematic Roadie composition instead of an aggressive close-up. */
+.hero-slide.hero-slide--roadie{transform:none;background-position:center}
+.hero-slide.hero-slide--roadie.is-active{transform:none}
+.hero-slide.hero-slide--roadie .hero-slide-img{object-fit:contain;object-position:68% center;transform:scale(.95);transform-origin:center;background:transparent}
+@media (max-width:1024px){
+  .hero-slide.hero-slide--roadie .hero-slide-img{object-fit:contain;object-position:center;transform:scale(.97)}
+}
+@media (max-width:640px){
+  /* Mobile: allow a slightly tighter crop but never cut Roadie head or legs */
+  .hero-slide.hero-slide--roadie .hero-slide-img{object-fit:cover;object-position:68% 30%;transform:scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  .hero-slide.hero-slide--roadie .hero-slide-img{transition:none}
+}
