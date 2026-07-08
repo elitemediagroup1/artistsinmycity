@@ -153,17 +153,39 @@
   }
 
   /* ---------- sign in / up / out ---------- */
+  /* Some Clerk instances/builds do not ship the in-page modal UI. Detect that
+     and prefer the hosted redirect so sign-in/up always works. */
+  function modalUiAvailable(Clerk) {
+    try {
+      if (typeof Clerk.openSignIn !== "function") return false;
+      /* clerk-js exposes ui readiness; if mountSignIn throws synchronously the
+         modal UI is not bundled. We probe lazily via a known flag when present. */
+      if (Clerk.__unstable__environment === undefined && !Clerk.client) return false;
+      return true;
+    } catch (e) { return false; }
+  }
   function openClerk(which, opts) {
     opts = opts || {};
     return loadClerkScripts().then(function (Clerk) {
       var isSignup = which === "signup";
-      var modalFn = isSignup ? Clerk.openSignUp : Clerk.openSignIn;
-      /* Prefer the in-page modal. If the bundled UI is unavailable, fall
-         back to Clerk hosted redirect, then to our own pages. */
-      if (typeof modalFn === "function") {
-        try { modalFn.call(Clerk, opts); return Clerk; } catch (err) {}
-      }
       var redirectFn = isSignup ? Clerk.redirectToSignUp : Clerk.redirectToSignIn;
+      var modalFn = isSignup ? Clerk.openSignUp : Clerk.openSignIn;
+      /* Try the in-page modal first; verify it actually rendered, otherwise
+         fall back to the Clerk hosted redirect, then to our own pages. */
+      if (typeof modalFn === "function") {
+        var ok = true;
+        try { modalFn.call(Clerk, opts); } catch (err) { ok = false; }
+        if (ok) {
+          /* If no Clerk modal appeared shortly after, use the redirect. */
+          setTimeout(function () {
+            var rendered = document.querySelector(".cl-modalBackdrop, .cl-card, [class*=\"cl-signIn\"], [class*=\"cl-signUp\"]");
+            if (!rendered && typeof redirectFn === "function") {
+              try { redirectFn.call(Clerk, opts); } catch (e2) {}
+            }
+          }, 600);
+          return Clerk;
+        }
+      }
       if (typeof redirectFn === "function") {
         try { redirectFn.call(Clerk, opts); return Clerk; } catch (err) {}
       }
