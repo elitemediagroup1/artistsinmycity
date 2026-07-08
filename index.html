@@ -3,18 +3,18 @@
 <!-- Analytics placeholders: replace IDs through env/build injection or GTM. -->
 <script defer="" src="/assets/js/integrations.js"></script>
 <script defer="" src="/assets/js/roadie.js" data-roadie-context="public"></script>
+<link rel="preload" as="image" href="/assets/img/hero-billboard-art.jpg" fetchpriority="high">
 </head><body><header class="site-header"><a class="brand" href="/index.html"><img src="/assets/img/logo-large.png" alt="Artists In My City logo"><span>Artists<br><b>In My City</b></span></a><nav><a href="/pages/discover.html">Discover</a><a href="/pages/cities.html">Cities</a><a href="/pages/categories.html">Categories</a><a href="/pages/artists-of-the-week.html">Artists of the Week</a><a href="/pages/creators.html">Creators</a><a href="/pages/events.html">Events</a><a href="/pages/about.html">About</a></nav><form class="top-search" data-search=""><input name="q" placeholder="Search artists, city, category..."><button aria-label="Search">⚲</button></form><a class="btn ghost" href="/pages/sign-in.html">Sign In</a><a class="btn hot" href="/pages/join.html">Join</a><button class="menu-toggle" data-menu="" aria-label="Menu">☰</button></header><main>
 <section class="hero hero-cinematic">
     <div class="hero-cine">
       <div class="hero-slides">
-        <div class="hero-slide is-active" data-kind="Artist of the Week" style="--scene:linear-gradient(120deg,#1a0b2e,#3a1250,#0b1030)"></div>
-        <div class="hero-slide" data-kind="Sponsored Artist" style="--scene:linear-gradient(120deg,#0b1030,#12324f,#0d0d16)"></div>
-        <div class="hero-slide" data-kind="Featured City" style="--scene:linear-gradient(120deg,#101a12,#1c3a2c,#0a0f14)"></div>
-        <div class="hero-slide" data-kind="Featured Venue" style="--scene:linear-gradient(120deg,#2a0f1e,#4a1233,#12060f)"></div>
-        <div class="hero-slide" data-kind="Featured Gallery" style="--scene:linear-gradient(120deg,#0c1230,#241a52,#0a0a18)"></div>
-        <div class="hero-slide" data-kind="Featured Event" style="--scene:linear-gradient(120deg,#241005,#4a2410,#100a06)"></div>
+        <div class="hero-slide is-active" data-kind="Artist of the Week" data-title="Discover.&lt;br&gt;Connect.&lt;br&gt;&lt;span class=&quot;grad&quot;&gt;Be Inspired.&lt;/span&gt;" data-sub="Every artist gets a premium digital exhibit. Every city finds its creative voice." data-cta="Explore Artists" data-href="/pages/discover.html" style="--scene:linear-gradient(120deg,#1a0b2e,#3a1250,#0b1030)"><img class="hero-slide-img" src="/assets/img/hero-billboard-art.jpg" alt="" width="1706" height="960" loading="eager" fetchpriority="high"></div>
+        <div class="hero-slide" data-kind="Featured Photography" data-title="Capture Every &lt;span class=&quot;grad&quot;&gt;Creative Moment&lt;/span&gt;" data-sub="Discover photographers, creators, and visual storytellers in your city." data-cta="Explore Photography" data-href="/pages/discover.html" style="--scene:linear-gradient(120deg,#0b1030,#12324f,#0d0d16)"><img class="hero-slide-img" src="/assets/img/hero-photographer.jpg" alt="" width="1706" height="960" loading="lazy" decoding="async"></div>
+        <div class="hero-slide" data-kind="Live Music" data-title="Feel The &lt;span class=&quot;grad&quot;&gt;Energy&lt;/span&gt;" data-sub="From local DJs to unforgettable live nights, discover artists who move your city." data-cta="Discover Live Music" data-href="/pages/discover.html" style="--scene:linear-gradient(120deg,#101a12,#1c3a2c,#0a0f14)"><img class="hero-slide-img" src="/assets/img/hero-dj.jpg" alt="" width="1706" height="960" loading="lazy" decoding="async"></div>
+        <div class="hero-slide" data-kind="Digital Exhibits" data-title="Step Into &lt;span class=&quot;grad&quot;&gt;Creativity&lt;/span&gt;" data-sub="Experience immersive galleries, exhibitions, and modern art from creators around you." data-cta="Explore Exhibits" data-href="/pages/discover.html" style="--scene:linear-gradient(120deg,#2a0f1e,#4a1233,#12060f)"><img class="hero-slide-img" src="/assets/img/hero-art-exhibit.jpg" alt="" width="1706" height="960" loading="lazy" decoding="async"></div>
+        <div class="hero-slide" data-kind="Live Events" data-title="Experience &lt;span class=&quot;grad&quot;&gt;Live Performances&lt;/span&gt;" data-sub="Find concerts, local bands, and unforgettable performances happening near you." data-cta="Browse Live Events" data-href="/pages/discover.html" style="--scene:linear-gradient(120deg,#0c1230,#241a52,#0a0a18)"><img class="hero-slide-img" src="/assets/img/hero-band.jpg" alt="" width="1706" height="960" loading="lazy" decoding="async"></div>
+        <div class="hero-slide" data-kind="Meet Roadie" data-title="Meet &lt;span class=&quot;grad&quot;&gt;Roadie&lt;/span&gt;" data-sub="Your AI creative partner helping artists build incredible digital exhibits and helping fans discover amazing local talent." data-cta="Meet Roadie" data-href="#meet-roadie" style="--scene:linear-gradient(120deg,#150a2e,#2a1250,#0b0a1a)"><img class="hero-slide-img" src="/assets/img/hero-roadie-spotlight.jpg" alt="" width="1706" height="960" loading="lazy" decoding="async"></div>
       </div>
-      <div class="hero-scene-noise" aria-hidden="true"></div>
       
       <div class="hero-cine-overlay"></div>
     </div>
@@ -29,11 +29,11 @@
         </div>
         <div class="hero-dots" role="tablist" aria-label="Featured slides">
           <button class="hero-dot is-active" aria-label="Artist of the Week"></button>
-          <button class="hero-dot" aria-label="Sponsored Artist"></button>
-          <button class="hero-dot" aria-label="Featured City"></button>
-          <button class="hero-dot" aria-label="Featured Venue"></button>
-          <button class="hero-dot" aria-label="Featured Gallery"></button>
-          <button class="hero-dot" aria-label="Featured Event"></button>
+          <button class="hero-dot" aria-label="Featured Photography"></button>
+          <button class="hero-dot" aria-label="Live Music"></button>
+          <button class="hero-dot" aria-label="Digital Exhibits"></button>
+          <button class="hero-dot" aria-label="Live Events"></button>
+          <button class="hero-dot" aria-label="Meet Roadie"></button>
         </div>
       </div>
     </div></section>
@@ -66,24 +66,24 @@
 <a class="artist-card exhibit-card" href="/pages/artist-coming-soon.html"><div class="art-img">Artist Slot 4</div><h3>Opening Soon</h3><p>Featured artist profile opening soon</p><span>♡ Save preview</span></a>
 </div></section>
 
-<section class="meet-roadie">
+<section class="meet-roadie" id="meet-roadie">
   <div class="mr-inner">
     <div class="mr-art">
       <img class="mr-portrait" src="/assets/characters/roadie/roadie-fullbody.png" alt="Roadie, your AI Creative Guide" loading="lazy" width="360" height="540">
     </div>
     <div class="mr-content">
       <span class="mr-eyebrow">Meet Roadie</span>
-      <h2 class="mr-title">Your AI Creative Guide</h2>
-      <p class="mr-body">Roadie helps artists build better digital exhibits, improve SEO and AEO, organize collections, prepare launches, grow audiences, and discover new opportunities across ArtistsInMyCity.</p>
+      <h2 class="mr-title">Your Creative <span class="mr-title-accent">Partner</span></h2>
+      <p class="mr-body">Roadie helps artists build beautiful digital exhibits, organize their work, prepare for launches, reach more people, grow their audience, and discover new opportunities—all in one place.</p>
       <div class="mr-cards">
-        <div class="mr-card"><span class="mr-check">&#10003;</span> Creative Coaching</div>
-        <div class="mr-card"><span class="mr-check">&#10003;</span> Exhibit Reviews</div>
-        <div class="mr-card"><span class="mr-check">&#10003;</span> SEO + AEO Optimization</div>
-        <div class="mr-card"><span class="mr-check">&#10003;</span> Gallery Suggestions</div>
-        <div class="mr-card"><span class="mr-check">&#10003;</span> Publishing Assistant</div>
-        <div class="mr-card"><span class="mr-check">&#10003;</span> Artist Growth Tips</div>
+        <div class="mr-card"><span class="mr-check">&#10003;</span> Build Your Artist Page</div>
+        <div class="mr-card"><span class="mr-check">&#10003;</span> Improve Your Exhibit</div>
+        <div class="mr-card"><span class="mr-check">&#10003;</span> Organize Your Artwork</div>
+        <div class="mr-card"><span class="mr-check">&#10003;</span> Reach More Fans</div>
+        <div class="mr-card"><span class="mr-check">&#10003;</span> Get Ready to Publish</div>
+        <div class="mr-card"><span class="mr-check">&#10003;</span> Grow Your Creative Career</div>
       </div>
-      <button type="button" class="mr-cta" onclick="var l=document.querySelector('.roadie-launcher'); if(l){ if(!document.querySelector('.roadie-root.open')) l.click(); }">Chat with Roadie</button>
+      <button type="button" class="mr-cta" onclick="var l=document.querySelector('.roadie-launcher'); if(l){ if(!document.querySelector('.roadie-root.open')) l.click(); }">Ask Roadie Anything</button>
     </div>
   </div>
 </section>
