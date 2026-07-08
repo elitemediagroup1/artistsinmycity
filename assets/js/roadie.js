@@ -1,4 +1,4 @@
-/* Roadie(TM) - AI Artist Guide & City Concierge
+/* Roadie(TM) - Creative Guide & City Concierge
    Floating widget for ArtistsInMyCity. No real Claude call yet.
    TODO: wire sendRoadieMessage() to server-side Claude endpoint.
    IMPORTANT: CLAUDE_API_KEY must remain server-side only. Never expose in frontend. */
@@ -34,14 +34,14 @@
 
   // ---- Build UI ----
   var root = el("div","roadie-root");
-  var launcher = el("button","roadie-launcher","<span class='roadie-ava'>R</span><span class='roadie-launch-text'>Ask Roadie</span><span class='roadie-dot'></span>");
+  var launcher = el("button","roadie-launcher","<span class='roadie-ava'><img class='roadie-ava-img' src='/assets/characters/roadie/roadie-default.png' alt='Roadie' onerror='this.remove()'>R</span><span class='roadie-launch-text'>Roadie</span><span class='roadie-dot'></span>");
   launcher.setAttribute("aria-label","Ask Roadie");
 
   var panel = el("div","roadie-panel");
   panel.innerHTML =
     "<div class='roadie-head'>"+
-      "<span class='roadie-ava sm'>R</span>"+
-      "<div class='roadie-head-txt'><strong>Roadie</strong><small>AI Artist Guide</small></div>"+
+      "<span class='roadie-ava sm'><img class='roadie-ava-img' src='/assets/characters/roadie/roadie-default.png' alt='Roadie' onerror='this.remove()'>R</span>"+
+      "<div class='roadie-head-txt'><strong>Roadie</strong><small>Creative Guide</small></div>"+
       "<span class='roadie-dot online' title='Online'></span>"+
       "<button class='roadie-close' aria-label='Close'>&times;</button>"+
     "</div>"+
