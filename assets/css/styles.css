@@ -845,3 +845,35 @@
   .s7-rv-row{flex-wrap:wrap;}
   .s7-theme-actions{flex-direction:column;}
 }
+
+
+/* ========================================================= */
+/* HERO BILLBOARD (Sprint - Hero Update) - Slide #1 artwork  */
+/* Permanent placeholder until real artists occupy the hero  */
+/* ========================================================= */
+.hero.hero-cinematic .hero-slide:first-child{
+  background-image:url("../img/hero-billboard.jpg");
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+}
+.hero.hero-cinematic .hero-slide:first-child::after{opacity:.35;}
+
+/* Premium readability overlay over the billboard */
+.hero.hero-cinematic .hero-cine-overlay{
+  background:linear-gradient(90deg,rgba(6,8,14,.88) 0%,rgba(6,8,14,.70) 35%,rgba(6,8,14,.35) 60%,rgba(6,8,14,.18) 100%),linear-gradient(0deg,rgba(6,8,14,.85),transparent 55%);
+}
+
+/* Remove COMING SOON watermark - billboard is now the placeholder */
+.hero.hero-cinematic .hero-cine-watermark{display:none !important;}
+
+/* Responsive: keep the billboard subject visible */
+@media (max-width:900px){
+  .hero.hero-cinematic .hero-slide:first-child{background-position:70% center;}
+  .hero.hero-cinematic .hero-cine-overlay{background:linear-gradient(90deg,rgba(6,8,14,.92) 0%,rgba(6,8,14,.80) 45%,rgba(6,8,14,.45) 100%),linear-gradient(0deg,rgba(6,8,14,.88),transparent 55%);}
+}
+@media (max-width:640px){
+  .hero.hero-cinematic .hero-slide:first-child{background-position:75% center;}
+  .hero.hero-cinematic .hero-cine-overlay{background:linear-gradient(180deg,rgba(6,8,14,.62) 0%,rgba(6,8,14,.86) 60%,rgba(6,8,14,.94) 100%);}
+}
+/* ===================== END HERO BILLBOARD ===================== */
