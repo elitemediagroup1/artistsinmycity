@@ -96,3 +96,12 @@
   .roadie-launcher .roadie-ava{width:40px;height:40px;font-size:18px;}
 }
 /* =================== END ROADIE BRAND POLISH =================== */
+
+
+/* ===== Roadie live typing indicator ===== */
+.roadie-typing{ display:inline-flex; gap:5px; align-items:center; }
+.roadie-typing span{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.55); display:inline-block; animation:roadieBlink 1.2s infinite ease-in-out; }
+.roadie-typing span:nth-child(2){ animation-delay:.2s; }
+.roadie-typing span:nth-child(3){ animation-delay:.4s; }
+@keyframes roadieBlink{ 0%,80%,100%{ opacity:.25; transform:translateY(0); } 40%{ opacity:1; transform:translateY(-2px); } }
+@media (prefers-reduced-motion: reduce){ .roadie-typing span{ animation:none; opacity:.6; } }
