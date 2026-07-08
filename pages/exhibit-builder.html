@@ -260,5 +260,29 @@
 <script src="/assets/js/sprint5.js"></script>
   <script defer src="/assets/js/artist-success.js"></script>
   <script defer src="/assets/js/exhibit-experience.js"></script>
+<script>
+  // Studio context provider so Roadie can advise with real exhibit context.
+  window.RoadieStudioContext = function(){
+    var ctx = { page: 'my-studio' };
+    try {
+      var scoreEl = document.querySelector('[data-exhibit-score], .exhibit-score, #exhibitScore, [data-score]');
+      if (scoreEl) ctx.exhibitScore = (scoreEl.textContent || '').trim().slice(0, 24);
+      var checks = document.querySelectorAll('input[type=checkbox]');
+      var done = document.querySelectorAll('input[type=checkbox]:checked').length;
+      if (checks.length) ctx.checklist = done + '/' + checks.length + ' complete';
+      var sections = document.querySelectorAll('[data-section], .exhibit-section, .builder-section').length;
+      if (sections) ctx.sections = sections;
+      for (var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if (/exhibit|studio|theme|collection|goal/i.test(k)){
+          try { var val = localStorage.getItem(k); if (val && val.length < 300) ctx[k] = val; } catch(e){}
+        }
+      }
+    } catch(e){}
+    return ctx;
+  };
+</script>
+<script defer src="/assets/js/app.js"></script>
+<script defer src="/assets/js/roadie.js" data-roadie-context="dashboard"></script>
 </body>
 </html>
