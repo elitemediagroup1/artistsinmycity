@@ -81,13 +81,11 @@
           window.Clerk.load({}).then(function () { resolve(window.Clerk); }, reject);
         } catch (e) { reject(e); }
       }
-      /* UI helper (optional). Guard against duplicates. */
-      if (!document.querySelector("script[data-aimc-clerk-ui]")) {
-        var ui = document.createElement("script");
-        ui.defer = true; ui.setAttribute("crossorigin", "anonymous");
-        ui.src = CLERK_UI_SRC; ui.setAttribute("data-aimc-clerk-ui", "1");
-        (document.head || document.documentElement).appendChild(ui);
-      }
+      /* NOTE: @clerk/ui@1 (ui.browser.js) is intentionally NOT loaded here.
+         clerk-js@6 (clerk.browser.js) already bundles the sign-in/sign-up
+         modal UI. Loading @clerk/ui alongside it disables the built-in
+         openSignIn/mountUserButton components ("not loaded with Ui
+         components"). CLERK_UI_SRC is retained for reference/future use. */
       /* Core Clerk JS. */
       var existing = document.querySelector("script[data-aimc-clerk-js]");
       if (existing) {
@@ -158,18 +156,22 @@
   function openClerk(which, opts) {
     opts = opts || {};
     return loadClerkScripts().then(function (Clerk) {
-      var fn = which === "signup" ? Clerk.openSignUp : Clerk.openSignIn;
-      if (typeof fn === "function") {
-        fn.call(Clerk, opts);
-      } else {
-        /* Fallback: navigate to hosted pages if modal API unavailable */
-        var url = which === "signup" ? "/pages/join.html" : "/pages/sign-in.html";
-        window.location.href = url;
+      var isSignup = which === "signup";
+      var modalFn = isSignup ? Clerk.openSignUp : Clerk.openSignIn;
+      /* Prefer the in-page modal. If the bundled UI is unavailable, fall
+         back to Clerk hosted redirect, then to our own pages. */
+      if (typeof modalFn === "function") {
+        try { modalFn.call(Clerk, opts); return Clerk; } catch (err) {}
       }
+      var redirectFn = isSignup ? Clerk.redirectToSignUp : Clerk.redirectToSignIn;
+      if (typeof redirectFn === "function") {
+        try { redirectFn.call(Clerk, opts); return Clerk; } catch (err) {}
+      }
+      window.location.href = isSignup ? "/pages/join.html" : "/pages/sign-in.html";
       return Clerk;
     });
   }
-  function signIn(opts) {
+    function signIn(opts) {
     track("auth_signin_opened", {});
     return openClerk("signin", opts);
   }
