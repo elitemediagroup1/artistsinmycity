@@ -4,7 +4,8 @@
 'use strict';
 
 var ANTHROPIC_HOST = 'https://' + 'api.anthropic.com' + '/v1/messages';
-var MODEL = 'claude-3-5-sonnet-20241022';
+var PRIMARY_MODEL = process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022';
+var FALLBACK_MODELS = ['claude-3-5-sonnet-20240620', 'claude-3-haiku-20240307', 'claude-3-sonnet-20240229'];
 var MAX_MESSAGE_LEN = 2000;
 var ALLOWED_ROLES = ['public', 'artist', 'fan', 'creator', 'admin'];
 var NL = String.fromCharCode(10);
@@ -78,31 +79,31 @@ exports.handler = async function (event) {
   }
   var contextBlock = ctxLines.length ? (NL + NL + 'Current session context (do not invent anything beyond this):' + NL + ctxLines.join(NL)) : '';
 
-  var apiRes, payload;
-  try {
-    apiRes = await fetch(ANTHROPIC_HOST, {
+  function callAnthropic(model){
+    return fetch(ANTHROPIC_HOST, {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 800,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: message + contextBlock }]
-      })
-    });
-    payload = await apiRes.json();
-  } catch (e) {
-    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error', debug: { where: 'fetch', msg: String(e && e.message).slice(0,120) } });
+      headers: { 'content-type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: model, max_tokens: 800, system: SYSTEM_PROMPT, messages: [{ role: 'user', content: message + contextBlock }] })
+    }).then(function(res){ return res.json().then(function(body){ return { ok: res.ok, status: res.status, body: body }; }); });
   }
 
-  if (!apiRes.ok) {
-    var dtype = (payload && payload.error && payload.error.type) ? payload.error.type : null;
-    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error', debug: { where: 'upstream', status: apiRes.status, type: dtype } });
+  var candidates = [PRIMARY_MODEL].concat(FALLBACK_MODELS);
+  var result = null;
+  try {
+    for (var ci = 0; ci < candidates.length; ci++){
+      result = await callAnthropic(candidates[ci]);
+      if (result.ok) break;
+      var etype = (result.body && result.body.error && result.body.error.type) ? result.body.error.type : '';
+      if (result.status !== 404 && etype !== 'not_found_error') break;
+    }
+  } catch (e) {
+    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error' });
   }
+
+  if (!result || !result.ok) {
+    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error' });
+  }
+  var payload = result.body;
 
   var reply = '';
   try {
