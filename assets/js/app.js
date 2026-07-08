@@ -88,13 +88,21 @@
 
   function ctxOf(){ var t = document.querySelector('script[data-roadie-context]'); return t ? (t.getAttribute('data-roadie-context')||'') : ''; }
 
-  function cityName(){
-    var h1 = document.querySelector('h1');
-    var t = h1 ? (h1.textContent||'').trim() : '';
-    if (!t) t = (document.title||'').trim();
+  function cleanCity(t){
+    if (!t) return '';
     t = t.split('|')[0];
-    t = t.replace(/artists?/i,'').replace(/in my city/i,'').replace(/[-\u2013\u2014].*$/,'').trim();
-    return t || null;
+    t = t.replace(/artists?/ig,'').replace(/in my city/ig,'');
+    t = t.replace(/[-\u2013\u2014].*$/,'');
+    t = t.replace(/^\s*(welcome to|discover|explore|find|meet)\s+/i,'');
+    t = t.replace(/[.,\s]+$/,'').trim();
+    return t;
+  }
+  function cityName(){
+    var fromTitle = cleanCity(document.title || '');
+    if (fromTitle) return fromTitle;
+    var h1 = document.querySelector('h1');
+    var fromH1 = cleanCity(h1 ? (h1.textContent||'') : '');
+    return fromH1 || null;
   }
 
   function esc(s){ return (s==null)?'':String(s); }
