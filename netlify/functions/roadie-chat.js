@@ -105,22 +105,19 @@ exports.handler = async function (event) {
   if (chosenModel) candidates.push(chosenModel);
   candidates = candidates.concat([PRIMARY_MODEL]).concat(FALLBACK_MODELS);
   var result = null;
-  var attempts = [];
   try {
     for (var ci = 0; ci < candidates.length; ci++){
       result = await callAnthropic(candidates[ci]);
-      var et = (result.body && result.body.error && result.body.error.type) ? result.body.error.type : '';
-      var em = (result.body && result.body.error && result.body.error.message) ? String(result.body.error.message).slice(0,80) : '';
-      attempts.push({ model: candidates[ci], status: result.status, type: et, msg: em });
       if (result.ok) break;
+      var et = (result.body && result.body.error && result.body.error.type) ? result.body.error.type : '';
       if (result.status !== 404 && et !== 'not_found_error') break;
     }
   } catch (e) {
-    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error', debug: { where: 'fetch', msg: String(e && e.message).slice(0,120), attempts: attempts } });
+    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error' });
   }
 
   if (!result || !result.ok) {
-    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error', debug: { attempts: attempts } });
+    return respond(200, { reply: 'Roadie is tuning up backstage. Try again in a moment.', suggestions: [], mode: 'error' });
   }
   var payload = result.body;
 
