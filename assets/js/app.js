@@ -31,6 +31,16 @@
     slides.forEach(function(s,x){ s.classList.toggle('is-active', x===i); });
     dots.forEach(function(d,x){ d.classList.toggle('is-active', x===i); });
     if(label && slides[i].dataset.kind) label.textContent = slides[i].dataset.kind;
+    var copy = root.querySelector('.hero-copy');
+    if(copy){
+      var ds = slides[i].dataset;
+      var h1 = copy.querySelector('h1');
+      var sub = copy.querySelector('.hero-sub');
+      var cta = copy.querySelector('.hero-actions .btn.hot');
+      if(h1 && ds.title){ h1.innerHTML = ds.title; }
+      if(sub && ds.sub){ sub.textContent = ds.sub; }
+      if(cta){ if(ds.cta){ cta.textContent = ds.cta; } if(ds.href){ cta.setAttribute('href', ds.href); } }
+    }
   }
   function next(){ show(i+1); }
   function start(){ stop(); timer = setInterval(next, 5000); }
