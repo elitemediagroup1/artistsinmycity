@@ -181,3 +181,182 @@
   });
 
 })(window);
+
+/* SPRINT10_LOOP_WEBHOOK_PIPELINE */
+/*
+ * Sprint 10: send Loop events server-side to the EMG LOOP webhook via
+ * the Netlify function loop-event. LOOP stores events in Neon. No Neon
+ * credentials or webhook secrets ever touch the browser. Additive only:
+ * wraps the existing track()/emit() so GA and local behavior are kept,
+ * and adds a localStorage queue with retry-on-load for failed sends.
+ */
+(function (window) {
+  "use strict";
+  if (!window.AIMCLoop) { return; }
+  if (window.__AIMC_LOOP_PIPELINE__) { return; }
+  window.__AIMC_LOOP_PIPELINE__ = true;
+
+  var Loop = window.AIMCLoop;
+  var ENDPOINT = ["/.netlify", "/functions", "/loop-event"].join("");
+  var QUEUE_KEY = "aimc.loop.queue";
+  var ANON_KEY = "aimc.anon_id";
+  var MAX_QUEUE = 200;
+
+  // ---- storage helpers ----
+  function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+
+  function anonId() {
+    var id = lsGet(ANON_KEY);
+    if (id) { return id; }
+    try {
+      id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID()
+        : ("anon_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10));
+    } catch (e) { id = "anon_" + Date.now(); }
+    lsSet(ANON_KEY, id);
+    return id;
+  }
+
+  function newEventId() {
+    try {
+      if (window.crypto && window.crypto.randomUUID) { return window.crypto.randomUUID(); }
+    } catch (e) {}
+    return "evt_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10);
+  }
+
+  // ---- auth / session context (read-only, never sends secrets) ----
+  function ctx() {
+    var out = { clerk_user_id: null, role: null, session_id: null };
+    try {
+      var C = window.Clerk;
+      if (C && C.user && C.user.id) { out.clerk_user_id = C.user.id; }
+      if (C && C.session && C.session.id) { out.session_id = C.session.id; }
+    } catch (e) {}
+    try {
+      var A = window.AIMCAuth;
+      if (A && typeof A.getRole === "function") { out.role = A.getRole() || null; }
+    } catch (e) {}
+    return out;
+  }
+
+  // ---- build a normalized event for the function ----
+  function normalize(eventName, payload) {
+    var c = ctx();
+    var loc = window.location || {};
+    return {
+      event_id: newEventId(),
+      event_name: eventName,
+      occurred_at: new Date().toISOString(),
+      anonymous_id: anonId(),
+      clerk_user_id: c.clerk_user_id,
+      role: c.role,
+      session_id: c.session_id,
+      page_url: (loc.href || null),
+      referrer: (document.referrer || null),
+      source: "web",
+      payload: (payload && typeof payload === "object") ? payload : {}
+    };
+  }
+
+  // ---- localStorage queue ----
+  function readQueue() {
+    try { var raw = lsGet(QUEUE_KEY); var arr = raw ? JSON.parse(raw) : []; return Array.isArray(arr) ? arr : []; }
+    catch (e) { return []; }
+  }
+  function writeQueue(arr) {
+    try {
+      if (arr.length > MAX_QUEUE) { arr = arr.slice(arr.length - MAX_QUEUE); }
+      lsSet(QUEUE_KEY, JSON.stringify(arr));
+    } catch (e) {}
+  }
+  function enqueue(evt) {
+    var arr = readQueue();
+    arr.push(evt);
+    writeQueue(arr);
+  }
+
+  // ---- network send (returns a Promise<boolean>) ----
+  function send(evt) {
+    try {
+      return window.fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(evt),
+        keepalive: true
+      }).then(function (res) { return res && res.ok; })
+        .catch(function () { return false; });
+    } catch (e) {
+      return Promise.resolve(false);
+    }
+  }
+
+  // ---- retry queued events (called on load) ----
+  var flushing = false;
+  function flushQueue() {
+    if (flushing) { return; }
+    var arr = readQueue();
+    if (!arr.length) { return; }
+    flushing = true;
+    var remaining = [];
+    var i = 0;
+    function step() {
+      if (i >= arr.length) {
+        writeQueue(remaining);
+        flushing = false;
+        return;
+      }
+      var evt = arr[i++];
+      send(evt).then(function (ok) {
+        if (!ok) { remaining.push(evt); }
+        step();
+      });
+    }
+    step();
+  }
+
+  // ---- pipeline entry: normalize, send, queue on fail ----
+  function pipeline(eventName, payload) {
+    if (!eventName) { return; }
+    var evt = normalize(eventName, payload);
+    send(evt).then(function (ok) { if (!ok) { enqueue(evt); } });
+    return evt;
+  }
+
+  // Suppress the emit-triggered pipeline while inside track(), so a single
+  // track() call (which internally calls emit()) forwards exactly once.
+  var suppressEmitPipeline = false;
+
+  // ---- wrap existing track() so all existing callers forward server-side ----
+  var prevTrack = (typeof Loop.track === "function") ? Loop.track : null;
+  Loop.track = function (eventName, payload) {
+    // Preserve existing local emit + GA mirror behavior (do not double-forward).
+    suppressEmitPipeline = true;
+    try { if (prevTrack) { prevTrack.call(Loop, eventName, payload); } } catch (e) {}
+    suppressEmitPipeline = false;
+    // Forward to EMG LOOP via the Netlify function exactly once.
+    try { pipeline(eventName, payload); } catch (e) {}
+  };
+
+  // Also wrap emit() so DIRECT emit callers are forwarded.
+  var prevEmit = (typeof Loop.emit === "function") ? Loop.emit : null;
+  if (prevEmit) {
+    Loop.emit = function (eventName, payload) {
+      var r;
+      try { r = prevEmit.call(Loop, eventName, payload); } catch (e) {}
+      if (!suppressEmitPipeline) {
+        try { pipeline(eventName, payload); } catch (e) {}
+      }
+      return r;
+    };
+  }
+
+  // Expose queue helpers for debugging / manual flush.
+  Loop.__pipeline = { flush: flushQueue, queueKey: QUEUE_KEY, endpoint: ENDPOINT };
+
+  // Retry any queued events from a previous session on load.
+  try {
+    if (document.readyState === "complete" || document.readyState === "interactive") { flushQueue(); }
+    else { window.addEventListener("DOMContentLoaded", flushQueue); }
+    window.addEventListener("online", flushQueue);
+  } catch (e) {}
+})(window);
