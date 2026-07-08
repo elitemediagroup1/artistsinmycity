@@ -25,9 +25,9 @@
     "public":    ["Find Artists","Find Events","Explore Cities","Art Venues"],
     "city":      ["Find Venues","Find Galleries","Upcoming Events","Local Artists"],
     "events":    ["Live Music Tonight","This Weekend","Near Me","Free Events"],
-    "dashboard": ["Write Bio","Improve SEO","Generate Gallery","Publish"],
+    "dashboard": ["Improve My Profile","Help More People Find Me","Write Bio","Generate Gallery","Prepare For Launch"],
     "discover":  ["Trending","Near Me","New Exhibits","Surprise Me"],
-    "about":     ["Find Artists","Explore Cities","Join","SEO Help"]
+    "about":     ["Find Artists","Explore Cities","Join","Help More People Find Me"]
   };
 
   function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
@@ -67,17 +67,101 @@
     body.scrollTop = body.scrollHeight;
   }
 
-  // Placeholder responder. Replace with server-side Claude call later.
+    // Live Roadie: server-side Anthropic via Netlify Function. API key stays server-side only.
+  var ROADIE_ENDPOINT = '/.netlify/functions/roadie-chat';
+  var chatStarted = false;
+
+  function roadieTrack(name, params){
+    try { if (window.aimcTrack) window.aimcTrack(name, params || {}); } catch(e){}
+    try { if (window.gtag) window.gtag('event', name, params || {}); } catch(e){}
+  }
+
+  function currentRole(){
+    try {
+      var mem = (window.RoadieMemory && window.RoadieMemory.getMemory) ? window.RoadieMemory.getMemory() : null;
+      if (mem && mem.role && mem.role !== 'public') return mem.role;
+    } catch(e){}
+    if (CONTEXT === 'dashboard') return 'artist';
+    if (CONTEXT === 'events' || CONTEXT === 'city') return 'fan';
+    return 'public';
+  }
+
+  function pageContext(){
+    var ctx = {};
+    try {
+      if (window.RoadieMemory && window.RoadieMemory.getMemory){
+        var m = window.RoadieMemory.getMemory();
+        if (m){
+          if (m.selectedCities && m.selectedCities.length) ctx.recentCity = m.selectedCities[m.selectedCities.length-1];
+          if (m.preferredArtForms && m.preferredArtForms.length) ctx.artForms = m.preferredArtForms.slice(0,5);
+        }
+      }
+    } catch(e){}
+    try { if (typeof window.RoadieStudioContext === 'function') ctx.studio = window.RoadieStudioContext(); } catch(e){}
+    try { var h1 = document.querySelector('h1'); if (h1) ctx.pageTitle = (h1.textContent||'').trim().slice(0,120); } catch(e){}
+    return ctx;
+  }
+
+  function showTyping(){
+    var t = el('div','roadie-msg bot roadie-typing');
+    t.setAttribute('data-typing','1');
+    t.innerHTML = '<span></span><span></span><span></span>';
+    body.appendChild(t); body.scrollTop = body.scrollHeight;
+    return t;
+  }
+  function clearTyping(){ var t = body.querySelector('[data-typing]'); if (t && t.parentNode) t.parentNode.removeChild(t); }
+
+  function renderSuggestions(list){
+    if (!list || !list.length) return;
+    quick.innerHTML = '';
+    list.forEach(function(s){
+      var b = el('button','roadie-chip',s);
+      b.addEventListener('click', function(){ sendRoadieMessage(s); });
+      quick.appendChild(b);
+    });
+  }
+
+  // Sends a message to the live Roadie endpoint and renders the reply.
   function sendRoadieMessage(text){
-    addMsg(text,"user");
-    setTimeout(function(){
-      addMsg("Thanks! Roadie's live AI is opening soon \u2014 for now, explore Artists, Cities and Events from the menu.","bot");
-    }, 500);
+    text = (text || '').trim();
+    if (!text) return;
+    addMsg(text,'user');
+    try { if (window.RoadieMemory && window.RoadieMemory.rememberRoadieMessage) window.RoadieMemory.rememberRoadieMessage(text); } catch(e){}
+    roadieTrack('roadie_message_sent', { page: location.pathname });
+    showTyping();
+    var payload = {
+      message: text,
+      role: currentRole(),
+      page: location.pathname,
+      context: pageContext(),
+      memory: (window.RoadieMemory && window.RoadieMemory.getMemory) ? window.RoadieMemory.getMemory() : {}
+    };
+    fetch(ROADIE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); })
+      .then(function(data){
+        clearTyping();
+        if (data && data.reply){
+          addMsg(data.reply,'bot');
+          renderSuggestions(data.suggestions);
+          roadieTrack('roadie_response_received', { mode: (data.mode || 'concierge') });
+        } else {
+          addMsg('Roadie is tuning up backstage. Try again in a moment.','bot');
+          roadieTrack('roadie_error', { reason: 'empty' });
+        }
+      })
+      .catch(function(){
+        clearTyping();
+        addMsg('Roadie is tuning up backstage. Try again in a moment.','bot');
+        roadieTrack('roadie_error', { reason: 'network' });
+      });
   }
   window.sendRoadieMessage = sendRoadieMessage;
 
   var opened = false, idleTimer=null;
-  function open(){ opened=true; root.classList.add("open"); launcher.classList.remove("nudge"); if(body.childElementCount===0) greet(); input.focus(); }
+  function open(){ opened=true; root.classList.add("open"); launcher.classList.remove("nudge"); if(body.childElementCount===0) greet(); input.focus(); if(!chatStarted){ chatStarted=true; roadieTrack('roadie_chat_started',{ page: location.pathname }); } }
   function close(){ opened=false; root.classList.remove("open"); }
   function greet(){
     addMsg(GREETINGS[CONTEXT]||GREETINGS.public,"bot");
