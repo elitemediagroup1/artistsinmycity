@@ -18,6 +18,42 @@
   var LOCAL_ROLE_KEY = "aimc.role";
   var RETURN_KEY = "aimc.returnTo";
 
+  /* Loop guard + hosted-redirect callback markers. */
+  var FLOW_KEY = "aimc.authFlow";
+  var HANDLED_KEY = "aimc.authHandled";
+
+  /* Debug logs are OFF unless window.AIMC_AUTH_DEBUG is set (or ?aimc_auth_debug in URL). */
+  var DEBUG = (function () {
+    try {
+      if (window.AIMC_AUTH_DEBUG) return true;
+      if ((window.location.search || "").indexOf("aimc_auth_debug") !== -1) return true;
+    } catch (e) {}
+    return false;
+  })();
+  function dbg() {
+    if (!DEBUG) { return; }
+    try { console.log.apply(console, ["[AIMCAuth]"].concat([].slice.call(arguments))); } catch (e) {}
+  }
+
+  /* Absolute URL on the current origin (for Clerk hosted-flow return). */
+  function absUrl(path) {
+    try { return window.location.origin + path; } catch (e) { return path; }
+  }
+  /* True if the current page already is (or starts with) the given app path. */
+  function onPath(path) {
+    try {
+      var here = window.location.pathname || "/";
+      return here === path || here === path.replace(/\.html$/, "");
+    } catch (e) { return false; }
+  }
+  /* Detect a Clerk hosted-redirect callback landing (has __clerk params). */
+  function isClerkCallback() {
+    try {
+      var s2 = (window.location.search || "") + (window.location.hash || "");
+      return s2.indexOf("__clerk") !== -1;
+    } catch (e) { return false; }
+  }
+
   var REDIRECTS = {
     signup: {
       artist:  "/pages/artist-onboarding.html",
@@ -148,8 +184,17 @@
     var table = REDIRECTS[kind] || REDIRECTS.home;
     var to = role ? table[role] : null;
     var ret = safeGet(RETURN_KEY);
-    if (ret) { safeDel(RETURN_KEY); window.location.href = ret; return; }
-    if (to) { window.location.href = to; }
+    if (ret) {
+      safeDel(RETURN_KEY);
+      if (!onPath(ret.split("?")[0])) { dbg("redirect -> return", ret); window.location.href = ret; return; }
+    }
+    if (to) {
+      if (onPath(to)) { dbg("already on destination, no redirect", to); return; }
+      dbg("redirect -> role dest", to);
+      window.location.href = to;
+      return;
+    }
+    dbg("no redirect destination for role", role);
   }
 
   /* ---------- sign in / up / out ---------- */
@@ -166,28 +211,38 @@
   }
   function openClerk(which, opts) {
     opts = opts || {};
+    var isSignup = which === "signup";
+    safeSet(FLOW_KEY, isSignup ? "signup" : "signin");
+    safeDel(HANDLED_KEY);
+    var backTo = absUrl((window.location.pathname || "/") +
+      ((window.location.search && window.location.search.length > 1) ? window.location.search + "&" : "?") +
+      "__clerk_cb=1");
+    var redirectOpts = {
+      redirectUrl: backTo,
+      afterSignUpUrl: backTo,
+      afterSignInUrl: backTo
+    };
+    for (var k in opts) { if (Object.prototype.hasOwnProperty.call(opts, k)) redirectOpts[k] = opts[k]; }
     return loadClerkScripts().then(function (Clerk) {
-      var isSignup = which === "signup";
       var redirectFn = isSignup ? Clerk.redirectToSignUp : Clerk.redirectToSignIn;
       var modalFn = isSignup ? Clerk.openSignUp : Clerk.openSignIn;
-      /* Try the in-page modal first; verify it actually rendered, otherwise
-         fall back to the Clerk hosted redirect, then to our own pages. */
+      dbg("openClerk", which, "backTo", backTo);
       if (typeof modalFn === "function") {
         var ok = true;
-        try { modalFn.call(Clerk, opts); } catch (err) { ok = false; }
+        try { modalFn.call(Clerk, redirectOpts); } catch (err) { ok = false; }
         if (ok) {
-          /* If no Clerk modal appeared shortly after, use the redirect. */
           setTimeout(function () {
-            var rendered = document.querySelector(".cl-modalBackdrop, .cl-card, [class*=\"cl-signIn\"], [class*=\"cl-signUp\"]");
+            var rendered = document.querySelector(".cl-modalBackdrop, .cl-card, [class*='cl-signIn'], [class*='cl-signUp']");
             if (!rendered && typeof redirectFn === "function") {
-              try { redirectFn.call(Clerk, opts); } catch (e2) {}
+              dbg("modal did not render, hosted redirect");
+              try { redirectFn.call(Clerk, redirectOpts); } catch (e2) {}
             }
           }, 600);
           return Clerk;
         }
       }
       if (typeof redirectFn === "function") {
-        try { redirectFn.call(Clerk, opts); return Clerk; } catch (err) {}
+        try { redirectFn.call(Clerk, redirectOpts); return Clerk; } catch (err) {}
       }
       window.location.href = isSignup ? "/pages/join.html" : "/pages/sign-in.html";
       return Clerk;
@@ -381,27 +436,47 @@
   }
 
   /* ---------- post sign-in / sign-up handling ---------- */
-  function handleAuthenticated() {
+  function handleAuthenticated(opts) {
+    opts = opts || {};
+    if (!isSignedIn()) { dbg("handleAuthenticated: not signed in yet, skip"); return; }
     var role = getRole();
     var pending = normalizeRole(safeGet(PENDING_ROLE_KEY));
+    var flow = safeGet(FLOW_KEY);
+    var fresh = opts.fresh === true;
+    publishRoadieContext();
+    updateNav();
+    if (fresh && safeGet(HANDLED_KEY) === "1") {
+      dbg("post-auth already handled this session, skip redirect");
+      fresh = false;
+    }
+    if (!fresh) {
+      if (role) { track("user_login", { role: role }); track(role + "_login", { role: role }); }
+      return;
+    }
+    safeSet(HANDLED_KEY, "1");
+    safeDel(FLOW_KEY);
     if (!role && pending) {
-      /* fresh signup: persist chosen role then redirect to signup destination */
+      dbg("fresh signup, applying pending role", pending);
       safeDel(PENDING_ROLE_KEY);
-      var loginName = "user_signup"; var roleName = pending + "_signup";
-      Promise.resolve(setRole(pending)).then(function () {
-        track(loginName, { role: pending });
-        track(roleName, { role: pending });
+      Promise.resolve(setRole(pending)).then(function (okSaved) {
+        if (!okSaved) { dbg("metadata save failed, mirrored role to localStorage", pending); }
+        track("user_signup", { role: pending });
+        track(pending + "_signup", { role: pending });
         publishRoadieContext();
         updateNav();
         redirectAfterAuth("signup");
       });
       return;
     }
-    if (!role) { safeDel(PENDING_ROLE_KEY); openRoleModal(); return; }
+    if (!role) {
+      dbg("signed in, no role -> role choice modal");
+      safeDel(PENDING_ROLE_KEY);
+      openRoleModal();
+      return;
+    }
     track("user_login", { role: role });
     track(role + "_login", { role: role });
-    publishRoadieContext();
-    updateNav();
+    redirectAfterAuth((flow === "signup") ? "signup" : "signin");
   }
 
   var wasSignedIn = null;
@@ -409,7 +484,10 @@
     var now = isSignedIn();
     updateNav();
     publishRoadieContext();
-    if (wasSignedIn === false && now === true) { handleAuthenticated(); }
+    if (wasSignedIn === false && now === true) {
+      dbg("clerk state -> signed in (fresh)");
+      handleAuthenticated({ fresh: true });
+    }
     wasSignedIn = now;
   }
 
@@ -417,8 +495,8 @@
   function wireNavButtons() {
     var header = document.querySelector("header.site-header");
     if (!header) return;
-    var signInBtn = header.querySelector('a.btn.ghost[href*="sign-in"]');
-    var joinBtn = header.querySelector('a.btn.hot[href*="join"]');
+    var signInBtn = header.querySelector("a.btn.ghost[href*='sign-in']");
+    var joinBtn = header.querySelector("a.btn.hot[href*='join']");
     if (signInBtn && !signInBtn.getAttribute("data-aimc-wired")) {
       signInBtn.setAttribute("data-aimc-wired", "1");
       signInBtn.addEventListener("click", function (e) { e.preventDefault(); signIn({}); });
@@ -439,14 +517,19 @@
       updateNav();
       publishRoadieContext();
       try { if (typeof Clerk.addListener === "function") Clerk.addListener(onClerkChange); } catch (e) {}
-      /* if we just returned from a redirect-based flow, handle it */
-      if (isSignedIn()) { handleAuthenticated(); }
-      /* route protection for protected pages */
+      var flowActive = !!safeGet(FLOW_KEY) || safeGet(PENDING_ROLE_KEY) !== null;
+      var cb = isClerkCallback();
+      dbg("init", { signedIn: isSignedIn(), flowActive: flowActive, callback: cb });
+      if (isSignedIn()) {
+        handleAuthenticated({ fresh: (flowActive || cb) });
+      } else if (flowActive || cb) {
+        dbg("expected auth return but signed out, clearing flow markers");
+        safeDel(FLOW_KEY);
+      }
       var need = PROTECTED[currentPath()];
       if (need) { requireAuth({ role: need }); }
       return Clerk;
     }).catch(function (e) {
-      /* Clerk unavailable: keep placeholder nav, do not crash */
       try { console.warn("[AIMCAuth] Clerk load failed", e && e.message); } catch (x) {}
     });
     return initPromise;
