@@ -1,6 +1,6 @@
 # ArtistsInMyCity - Build Status
 
-**Current Version:** v4.1 (Sprint 8 - Live Roadie + Google Maps)
+**Current Version:** v4.2 (Sprint 8.2 - Clerk Auth + Hero Roadie fix)
 **Last Updated:** 2026-07-08
 **Date:** 2026-07-08
 
@@ -10,6 +10,32 @@ remains, and the technical state of the platform.
 ---
 
 ## Completed Features
+
+### Sprint 8.2 (Clerk Authentication + Hero Roadie Fix)
+- **Clerk browser auth** (`assets/js/clerk-auth.js`, loaded via `integrations.js`)
+  - `window.AIMCAuth` helper: init, isSignedIn, getUser, getRole, signIn,
+    signUp, signOut, requireAuth, setRole, redirectAfterAuth.
+  - Loads Clerk once (guarded); TEST publishable key; no secret in frontend.
+  - Nav auth state: hides Sign In/Join when signed in, injects role-aware link
+    (My Studio / Fan Space / Creator Space / Admin) + Clerk user button.
+  - Join role-choice modal (Artist / Fan / Creator, Admin if enabled).
+  - Sign-in + sign-up flows with role-based redirects and returnTo handling.
+  - Protected routes: artist-studio, artist-onboarding, exhibit-builder,
+    fan-dashboard, creator-dashboard, admin (graceful wrong-role screen).
+  - GA + Loop events: user/artist/fan/creator signup & login, logout,
+    auth_role_selected, auth_required_redirect, auth_wrong_role.
+- **Server function** `netlify/functions/clerk-set-role.js` (POST-only, reads
+  `CLERK_SECRET_KEY` from env, validates role, PATCHes Clerk public_metadata,
+  never leaks secrets/provider errors). Session-verification TODO documented.
+- **Roadie auth context**: `roadie.js` sends `auth` (user id, first name, role,
+  signed-in) in chat payload and prefers the Clerk role.
+- **Hero Roadie slide fix**: `.hero-slide--roadie` scoped CSS shows the full
+  cinematic composition (contain + object-position + reduced scale, no Ken Burns);
+  new image `hero-roadie-spotlight-v2.jpg`. Other slides unchanged, no CLS.
+- **Env**: `.env.example` set to TEST Clerk publishable key +
+  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`; `CLERK_SECRET_KEY` blank for Netlify.
+- **Docs**: `docs/CLERK_AUTH.md` (setup, roles, routes, redirects, prod checklist).
+
 
 ### Sprint 4 (Product Maturity)
 - **Artist Onboarding Wizard** (`/pages/artist-onboarding.html`, `assets/js/onboarding.js`)
