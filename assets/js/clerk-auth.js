@@ -159,15 +159,28 @@
   function setRole(role) {
     role = normalizeRole(role);
     if (!role) return Promise.resolve(false);
+    /* Dev fallback ONLY: mirror role locally so the UI works before Clerk
+       metadata is confirmed. The server (clerk-set-role) is the source of
+       truth in production; this localStorage copy must not be relied on. */
     safeSet(LOCAL_ROLE_KEY, role);
-    var userId = null;
-    try { userId = window.Clerk && window.Clerk.user && window.Clerk.user.id; } catch (e) {}
-    if (!userId) return Promise.resolve(true);
-    return fetch("/.netlify/functions/clerk-set-role", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: userId, role: role })
-    }).then(function (r) { return r.ok; }).catch(function () { return false; });
+    /* Server verifies the SESSION (not a client-sent user id) before writing
+       metadata, so we send the Clerk session id + a fresh session token. */
+    var session = null;
+    try { session = window.Clerk && window.Clerk.session; } catch (e) {}
+    if (!session || typeof session.getToken !== "function") {
+      return Promise.resolve(true); /* signed out / no session: keep local mirror */
+    }
+    return Promise.resolve(session.getToken()).then(function (token) {
+      if (!token) return true;
+      return fetch("/.netlify/functions/clerk-set-role", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ role: role, sessionId: session.id, sessionToken: token })
+      }).then(function (r) { return r.ok; });
+    }).catch(function () { return false; });
   }
 
   /* ---------- auth state ---------- */
