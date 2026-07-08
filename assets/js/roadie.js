@@ -77,6 +77,7 @@
   }
 
   function currentRole(){
+    try { if (window.AIMCAuth && window.AIMCAuth.getRole && window.AIMCAuth.getRole()) return window.AIMCAuth.getRole(); } catch(e){}
     try {
       var mem = (window.RoadieMemory && window.RoadieMemory.getMemory) ? window.RoadieMemory.getMemory() : null;
       if (mem && mem.role && mem.role !== 'public') return mem.role;
@@ -84,6 +85,25 @@
     if (CONTEXT === 'dashboard') return 'artist';
     if (CONTEXT === 'events' || CONTEXT === 'city') return 'fan';
     return 'public';
+  }
+
+
+  // Auth context supplied by clerk-auth.js (window.AIMCAuth / AIMCAuthContext).
+  function authContext(){
+    var a = { signedIn: false };
+    try {
+      if (window.AIMCAuth) {
+        a.signedIn = !!(window.AIMCAuth.isSignedIn && window.AIMCAuth.isSignedIn());
+        if (a.signedIn) {
+          var u = window.AIMCAuth.getUser && window.AIMCAuth.getUser();
+          if (u) { a.userId = u.id || null; a.firstName = u.firstName || (u.fullName ? u.fullName.split(" ")[0] : null) || null; }
+          a.role = window.AIMCAuth.getRole && window.AIMCAuth.getRole();
+        }
+      } else if (window.AIMCAuthContext) {
+        a = window.AIMCAuthContext;
+      }
+    } catch(e){}
+    return a;
   }
 
   function pageContext(){
@@ -134,7 +154,8 @@
       role: currentRole(),
       page: location.pathname,
       context: pageContext(),
-      memory: (window.RoadieMemory && window.RoadieMemory.getMemory) ? window.RoadieMemory.getMemory() : {}
+      memory: (window.RoadieMemory && window.RoadieMemory.getMemory) ? window.RoadieMemory.getMemory() : {},
+      auth: authContext()
     };
     fetch(ROADIE_ENDPOINT, {
       method: 'POST',
