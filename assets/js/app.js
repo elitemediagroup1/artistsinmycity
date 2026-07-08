@@ -199,5 +199,16 @@
     try { if (ctx === 'city') mountCityGuide(); } catch(e){}
     try { if (ctx === 'events') mountEventsVenue(); } catch(e){}
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  function boot(){
+    init();
+    var tries = 0;
+    var iv = setInterval(function(){ try { initSearchAutocomplete(); } catch(e){} if (++tries >= 12) clearInterval(iv); }, 600);
+    try {
+      var mo = new MutationObserver(function(){ try { initSearchAutocomplete(); } catch(e){} });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function(){ mo.disconnect(); }, 9000);
+    } catch(e){}
+    window.addEventListener('load', function(){ try { initSearchAutocomplete(); } catch(e){} });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
