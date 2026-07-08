@@ -1,6 +1,6 @@
 # ArtistsInMyCity - Build Status
 
-**Current Version:** v4.2 (Sprint 8.2 - Clerk Auth + Hero Roadie fix)
+**Current Version:** v4.3 (Sprint 8.3 - Clerk security finalization + redirect-loop fix)
 **Last Updated:** 2026-07-08
 **Date:** 2026-07-08
 
@@ -10,6 +10,30 @@ remains, and the technical state of the platform.
 ---
 
 ## Completed Features
+
+### Sprint 8.3 (Clerk Security Finalization + Redirect-Loop Fix)
+- **Post-signup redirect loop FIXED** (`assets/js/clerk-auth.js`):
+  - Hosted sign-in/up now returns to the site via explicit `redirectUrl` /
+    `afterSignUpUrl` / `afterSignInUrl` (with a `__clerk_cb` marker),
+    instead of looping back to Clerk's own signup page.
+  - Post-auth routing runs once per tab (`aimc.authHandled` guard); an
+    already-signed-in visitor is no longer force-redirected. `onPath()` prevents
+    redirecting to a page the user is already on.
+  - Missing role -> role-choice modal (no bounce to signup). Debug logs gated
+    behind `window.AIMC_AUTH_DEBUG` / `?aimc_auth_debug`.
+- **clerk-set-role hardened to production security** (`netlify/functions/clerk-set-role.js`):
+  - Verifies the Clerk **session server-side** (`/v1/sessions/{id}/verify`) and
+    derives the user id from Clerk - no longer trusts a client-provided user id.
+  - A signed-in user can only update **their own** role; unauthenticated /
+    invalid-session requests return `401`; invalid roles return `400`.
+  - Missing `CLERK_SECRET_KEY` -> safe setup error (`503`); secret never
+    exposed or returned; no stack traces / provider errors leaked.
+  - Client `setRole` sends the Clerk session id + token; localStorage role is
+    now a clearly-documented **temporary dev fallback only**.
+- **Docs**: `docs/CLERK_AUTH.md` updated (session-verified model, Netlify env
+  vars, Clerk dashboard allowed-origin/redirect checklist, test->live switch).
+- Still on TEST keys pending end-to-end verification.
+
 
 ### Sprint 8.2 (Clerk Authentication + Hero Roadie Fix)
 - **Clerk browser auth** (`assets/js/clerk-auth.js`, loaded via `integrations.js`)
@@ -26,7 +50,7 @@ remains, and the technical state of the platform.
     auth_role_selected, auth_required_redirect, auth_wrong_role.
 - **Server function** `netlify/functions/clerk-set-role.js` (POST-only, reads
   `CLERK_SECRET_KEY` from env, validates role, PATCHes Clerk public_metadata,
-  never leaks secrets/provider errors). Session-verification TODO documented.
+  never leaks secrets/provider errors).
 - **Roadie auth context**: `roadie.js` sends `auth` (user id, first name, role,
   signed-in) in chat payload and prefers the Clerk role.
 - **Hero Roadie slide fix**: `.hero-slide--roadie` scoped CSS shows the full
