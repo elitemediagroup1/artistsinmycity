@@ -848,16 +848,28 @@
 
 
 /* ========================================================= */
-/* HERO BILLBOARD (Sprint - Hero Update) - Slide #1 artwork  */
-/* Permanent placeholder until real artists occupy the hero  */
+/* HERO BILLBOARD (Sprint - Hero Update) - Slide #1 scene    */
+/* Text-free cinematic Times Square-style billboard.         */
+/* No embedded text/logos/brands - atmosphere only. The real */
+/* HTML headline (DISCOVER. CONNECT. BE INSPIRED.) sits over  */
+/* it. Permanent placeholder until real artists occupy hero.  */
 /* ========================================================= */
 .hero.hero-cinematic .hero-slide:first-child{
-  background-image:url("../img/hero-billboard.jpg");
+  background-image:
+    radial-gradient(40% 58% at 76% 44%, rgba(255,55,150,.70), transparent 60%),
+    radial-gradient(34% 50% at 84% 62%, rgba(130,70,255,.62), transparent 58%),
+    radial-gradient(30% 44% at 64% 28%, rgba(20,190,255,.50), transparent 58%),
+    radial-gradient(22% 32% at 90% 34%, rgba(255,175,45,.38), transparent 58%),
+    radial-gradient(12% 16% at 12% 84%, rgba(255,120,60,.20), transparent 70%),
+    radial-gradient(9% 12% at 26% 92%, rgba(80,150,255,.18), transparent 70%),
+    linear-gradient(100deg, rgba(10,10,18,0) 42%, rgba(40,25,65,.45) 56%, rgba(12,10,22,0) 92%),
+    linear-gradient(120deg, #0a0810 0%, #150b24 45%, #0b1030 100%);
   background-size:cover;
   background-position:center center;
   background-repeat:no-repeat;
 }
-.hero.hero-cinematic .hero-slide:first-child::after{opacity:.35;}
+/* let the artwork glow read through the scene layer */
+.hero.hero-cinematic .hero-slide:first-child::after{opacity:.5;}
 
 /* Premium readability overlay over the billboard */
 .hero.hero-cinematic .hero-cine-overlay{
@@ -867,7 +879,7 @@
 /* Remove COMING SOON watermark - billboard is now the placeholder */
 .hero.hero-cinematic .hero-cine-watermark{display:none !important;}
 
-/* Responsive: keep the billboard subject visible */
+/* Responsive: keep the billboard scene premium */
 @media (max-width:900px){
   .hero.hero-cinematic .hero-slide:first-child{background-position:70% center;}
   .hero.hero-cinematic .hero-cine-overlay{background:linear-gradient(90deg,rgba(6,8,14,.92) 0%,rgba(6,8,14,.80) 45%,rgba(6,8,14,.45) 100%),linear-gradient(0deg,rgba(6,8,14,.88),transparent 55%);}
