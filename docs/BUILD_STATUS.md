@@ -1,8 +1,8 @@
 # ArtistsInMyCity - Build Status
 
-**Current Version:** v4.0 (Sprint 7 - The Digital Exhibit Experience)
-**Last Updated:2026-07-07
-**Date:** 2026-07-07
+**Current Version:** v4.1 (Sprint 8 - Live Roadie + Google Maps)
+**Last Updated:** 2026-07-08
+**Date:** 2026-07-08
 
 This file is mandatory after every sprint. It records what is done, what
 remains, and the technical state of the platform.
@@ -203,3 +203,25 @@ Marketplace, Commissions, Print Sales, Physical Shop, Auction System, Subscripti
 - All placeholders clearly marked.
 - Existing dark premium design language (Spotify x Apple x MoMA) preserved.
 - Terminology: Exhibit / Studio / Gallery / Collection - not "Profile".
+
+## Sprint 8: Live Roadie + Google Maps (COMPLETE)
+
+- Roadie now answers real questions through Anthropic via `netlify/functions/roadie-chat.js`.
+- Google Places autocomplete via `netlify/functions/maps-autocomplete.js`.
+- Google Places local creative search via `netlify/functions/maps-creative-search.js`.
+- Roadie widget (`assets/js/roadie.js`) wired to the live endpoint with typing state, fallback, and analytics events.
+- `assets/js/app.js` exposes `window.MapsLive`, mounts the city creative guide, the events venue finder, and city/ZIP search autocomplete.
+- Keys are server-side only (`ANTHROPIC_API_KEY`, `GOOGLE_MAPS_API_KEY`); nothing exposed in the browser.
+- Docs: `ROADIE_LIVE_API.md`, `GOOGLE_MAPS_INTEGRATION.md`, `API_INTEGRATIONS.md`.
+
+### Known limitations
+
+- Live results require the Netlify env vars to be set; without them, functions return friendly preview responses.
+- No client-side map rendering yet (results link out to Google Maps).
+- Rate limiting is light (validation + size caps); a per-IP throttle can be added later.
+
+### Future integrations
+
+- Ticketmaster / Eventbrite / Bandsintown for live event listings.
+- Optional embedded map view and place details.
+
