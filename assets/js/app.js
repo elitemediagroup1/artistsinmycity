@@ -186,9 +186,11 @@
     window.addEventListener('scroll', function(){ if (dd.style.display!=='none') place(); }, true);
   }
 
+  function isTextInput(el){ var t = (el.getAttribute('type')||el.type||'text').toLowerCase(); return t==='text' || t==='search'; }
   function initSearchAutocomplete(){
-    var inputs = document.querySelectorAll('[data-search] input[type=text], [data-search] input[type=search], input[data-location-search]');
-    for (var i=0;i<inputs.length;i++) attachAutocomplete(inputs[i]);
+    var sel = ['[data-search] input','input[data-location-search]','input[placeholder*="ZIP"]','input[placeholder*="City"]','input[placeholder*="city"]','input[placeholder*="category"]'];
+    var inputs = document.querySelectorAll(sel.join(','));
+    for (var i=0;i<inputs.length;i++){ if (isTextInput(inputs[i])) attachAutocomplete(inputs[i]); }
   }
 
   function init(){
