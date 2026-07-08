@@ -4,8 +4,9 @@
 'use strict';
 
 var ANTHROPIC_HOST = 'https://' + 'api.anthropic.com' + '/v1/messages';
+var ANTHROPIC_MODELS = 'https://' + 'api.anthropic.com' + '/v1/models';
 var PRIMARY_MODEL = process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022';
-var FALLBACK_MODELS = ['claude-3-5-sonnet-20240620', 'claude-3-haiku-20240307', 'claude-3-sonnet-20240229'];
+var FALLBACK_MODELS = ['claude-3-5-sonnet-latest', 'claude-3-5-haiku-latest', 'claude-3-7-sonnet-latest', 'claude-sonnet-4-20250514', 'claude-opus-4-20250514', 'claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307'];
 var MAX_MESSAGE_LEN = 2000;
 var ALLOWED_ROLES = ['public', 'artist', 'fan', 'creator', 'admin'];
 var NL = String.fromCharCode(10);
@@ -87,7 +88,22 @@ exports.handler = async function (event) {
     }).then(function(res){ return res.json().then(function(body){ return { ok: res.ok, status: res.status, body: body }; }); });
   }
 
-  var candidates = [PRIMARY_MODEL].concat(FALLBACK_MODELS);
+  // Discover an available model for this key (model IDs change over time).
+  var chosenModel = process.env.CLAUDE_MODEL || null;
+  if (!chosenModel) {
+    try {
+      var mres = await fetch(ANTHROPIC_MODELS, { headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' } });
+      if (mres.ok) {
+        var mjson = await mres.json();
+        var ids = (mjson && Array.isArray(mjson.data)) ? mjson.data.map(function(x){ return x.id; }) : [];
+        for (var mi = 0; mi < ids.length; mi++) { if (/sonnet/i.test(ids[mi])) { chosenModel = ids[mi]; break; } }
+        if (!chosenModel && ids.length) chosenModel = ids[0];
+      }
+    } catch (e) {}
+  }
+  var candidates = [];
+  if (chosenModel) candidates.push(chosenModel);
+  candidates = candidates.concat([PRIMARY_MODEL]).concat(FALLBACK_MODELS);
   var result = null;
   var attempts = [];
   try {
