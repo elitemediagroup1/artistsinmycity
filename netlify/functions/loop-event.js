@@ -56,6 +56,71 @@ function firstDefined() {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Event taxonomy normalization (transition shim).
+//
+// The client is being migrated to canonical dot-namespaced event names
+// (e.g. "session.login", "fan.followed_artist"). To avoid breaking older
+// page bundles that may still emit legacy snake_case names, we translate any
+// legacy name to its canonical form HERE, server-side, so Loop only ever
+// stores ONE canonical event per action. No duplicate old+new events are
+// emitted. Names already in canonical form pass through unchanged.
+//
+// Some legacy names also imply a payload role (fan_login / user_login ->
+// session.login with { role }). Roles are merged into the payload, not the
+// event name.
+// ---------------------------------------------------------------------------
+var CANONICAL_EVENTS = {
+  "artist.profile_viewed": true,
+  "artist.claimed_profile": true,
+  "artist.submitted_music": true,
+  "artist.theme_changed": true,
+  "fan.signup_started": true,
+  "fan.registered": true,
+  "fan.followed_artist": true,
+  "fan.saved_artist": true,
+  "fan.interest_saved": true,
+  "fan.home_personalized": true,
+  "visitor.exhibit_viewed": true,
+  "contact.form_submitted": true,
+  "notification.opened": true,
+  "session.login": true
+};
+
+var LEGACY_EVENT_MAP = {
+  "fan_login":               { type: "session.login", add: { role: "fan" } },
+  "user_login":              { type: "session.login" },
+  "fan_registered":          { type: "fan.registered" },
+  "fan_followed_artist":     { type: "fan.followed_artist" },
+  "fan_saved_exhibit":       { type: "fan.saved_artist" },
+  "fan_saved_artist":        { type: "fan.saved_artist" },
+  "fan_interest_saved":      { type: "fan.interest_saved" },
+  "fan_home_personalized":   { type: "fan.home_personalized" },
+  "artist_theme_changed":    { type: "artist.theme_changed" },
+  "visitor_visited_exhibit": { type: "visitor.exhibit_viewed" },
+  "notification_opened":     { type: "notification.opened" }
+};
+
+var DROPPED_EVENTS = {
+  "roadie_memory_updated": true
+};
+
+function canonicalizeEvent(rawType, payload) {
+  var p = payload && typeof payload === "object" ? payload : {};
+  if (DROPPED_EVENTS[rawType]) {
+    return { drop: true };
+  }
+  if (CANONICAL_EVENTS[rawType]) {
+    return { type: rawType, payload: p };
+  }
+  var mapped = LEGACY_EVENT_MAP[rawType];
+  if (mapped) {
+    var merged = Object.assign({}, mapped.add || {}, p);
+    return { type: mapped.type, payload: merged };
+  }
+  return { type: rawType, payload: p };
+}
+
 exports.handler = async function (event) {
   // Only accept POSTs from our own client layer.
   if (event.httpMethod === "OPTIONS") {
@@ -80,10 +145,17 @@ exports.handler = async function (event) {
 
   // Accept either the new field names or the older snake_case names the client
   // may still send, and normalize to the EMG Loop Event Gateway envelope.
-  const eventType = firstDefined(body.eventType, body.event_name, body.event, body.name);
+  let eventType = firstDefined(body.eventType, body.event_name, body.event, body.name);
   if (!eventType) {
     return jsonResponse(400, { ok: false, error: "missing_event_type" });
   }
+
+  // Normalize/translate legacy names to a single canonical event.
+  var canon = canonicalizeEvent(eventType, (body.payload && typeof body.payload === "object") ? body.payload : {});
+  if (canon.drop) {
+    return jsonResponse(200, { ok: true, skipped: true, reason: "dropped_event", eventType: eventType });
+  }
+  eventType = canon.type;
 
   const nowIso = new Date().toISOString();
   const envelope = {
@@ -97,7 +169,7 @@ exports.handler = async function (event) {
     sessionId: firstDefined(body.sessionId, body.session_id),
     pageUrl: firstDefined(body.pageUrl, body.page_url),
     referrer: firstDefined(body.referrer),
-    payload: body.payload && typeof body.payload === "object" ? body.payload : {},
+    payload: canon.payload || {},
     metadata: Object.assign(
       {
         source: "web",
