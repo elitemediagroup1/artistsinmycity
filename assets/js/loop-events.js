@@ -19,9 +19,9 @@
     ARTIST_GENERATED_SEO:        'artist_generated_seo',
     ARTIST_PREVIEWED:            'artist_previewed',
     ARTIST_PUBLISHED:            'artist_published',
-    FAN_REGISTERED:              'fan_registered',
-    FAN_FOLLOWED_ARTIST:         'fan_followed_artist',
-    FAN_SAVED_EXHIBIT:           'fan_saved_exhibit',
+    FAN_REGISTERED:              'fan.registered',
+    FAN_FOLLOWED_ARTIST:         'fan.followed_artist',
+    FAN_SAVED_ARTIST:            'fan.saved_artist',
     ROADIE_CHAT_STARTED:         'roadie_chat_started',
     ROADIE_MESSAGE_SENT:         'roadie_message_sent',
     EVENT_SEARCH:                'event_search',
@@ -70,7 +70,7 @@
     published:           function (d) { return loopEvent(LOOP_EVENTS.ARTIST_PUBLISHED, d); },
     fanRegistered:       function (d) { return loopEvent(LOOP_EVENTS.FAN_REGISTERED, d); },
     fanFollowed:         function (d) { return loopEvent(LOOP_EVENTS.FAN_FOLLOWED_ARTIST, d); },
-    fanSaved:            function (d) { return loopEvent(LOOP_EVENTS.FAN_SAVED_EXHIBIT, d); },
+    fanSaved:            function (d) { return loopEvent(LOOP_EVENTS.FAN_SAVED_ARTIST, d); },
     roadieChatStarted:   function (d) { return loopEvent(LOOP_EVENTS.ROADIE_CHAT_STARTED, d); },
     roadieMessageSent:   function (d) { return loopEvent(LOOP_EVENTS.ROADIE_MESSAGE_SENT, d); },
     eventSearch:         function (d) { return loopEvent(LOOP_EVENTS.EVENT_SEARCH, d); },
@@ -109,9 +109,8 @@
   var Loop = window.AIMCLoop = window.AIMCLoop || {};
 
   var NEW_EVENTS = [
-    'roadie_memory_updated',
     'roadie_preference_saved',
-    'artist_theme_changed',
+    'artist.theme_changed',
     'collection_created',
     'collection_updated',
     'collection_previewed',
@@ -119,11 +118,11 @@
     'media_alt_text_requested',
     'media_caption_requested',
     'media_cover_suggested',
-    'fan_interest_saved',
-    'fan_home_personalized',
+    'fan.interest_saved',
+    'fan.home_personalized',
     'timeline_event_added',
     'recommendation_viewed',
-    'notification_opened',
+    'notification.opened',
     'command_palette_opened',
     'command_palette_action_selected'
   ];
@@ -158,9 +157,12 @@
 
   // Named helpers (camelCase) for the new events.
   var helpers = {
-    roadieMemoryUpdated:        function (p) { loopTrack('roadie_memory_updated', p); },
+    // roadie.memory_updated is intentionally NOT emitted into the product Loop
+    // stream for now (internal agent-memory signal). Kept as a no-op so any
+    // existing callers do not break.
+    roadieMemoryUpdated:        function (p) { /* dropped: not sent to Loop */ return; },
     roadiePreferenceSaved:      function (p) { loopTrack('roadie_preference_saved', p); },
-    artistThemeChanged:         function (p) { loopTrack('artist_theme_changed', p); },
+    artistThemeChanged:         function (p) { loopTrack('artist.theme_changed', p); },
     collectionCreated:          function (p) { loopTrack('collection_created', p); },
     collectionUpdated:          function (p) { loopTrack('collection_updated', p); },
     collectionPreviewed:        function (p) { loopTrack('collection_previewed', p); },
@@ -168,11 +170,11 @@
     mediaAltTextRequested:      function (p) { loopTrack('media_alt_text_requested', p); },
     mediaCaptionRequested:      function (p) { loopTrack('media_caption_requested', p); },
     mediaCoverSuggested:        function (p) { loopTrack('media_cover_suggested', p); },
-    fanInterestSaved:           function (p) { loopTrack('fan_interest_saved', p); },
-    fanHomePersonalized:        function (p) { loopTrack('fan_home_personalized', p); },
+    fanInterestSaved:           function (p) { loopTrack('fan.interest_saved', p); },
+    fanHomePersonalized:        function (p) { loopTrack('fan.home_personalized', p); },
     timelineEventAdded:         function (p) { loopTrack('timeline_event_added', p); },
     recommendationViewed:       function (p) { loopTrack('recommendation_viewed', p); },
-    notificationOpened:         function (p) { loopTrack('notification_opened', p); },
+    notificationOpened:         function (p) { loopTrack('notification.opened', p); },
     commandPaletteOpened:       function (p) { loopTrack('command_palette_opened', p); },
     commandPaletteActionSelected: function (p) { loopTrack('command_palette_action_selected', p); }
   };
@@ -420,12 +422,67 @@
     return emit("contact.form_submitted", payload);
   };
 
+  // artist.theme_changed - an artist changed their profile/exhibit theme.
+  Loop.events.artistThemeChanged = function (payload) {
+    return emit("artist.theme_changed", payload);
+  };
+
+  // fan.registered - a fan completed registration.
+  Loop.events.fanRegistered = function (payload) {
+    return emit("fan.registered", payload);
+  };
+
+  // fan.followed_artist - a fan followed an artist.
+  Loop.events.fanFollowedArtist = function (payload) {
+    return emit("fan.followed_artist", payload);
+  };
+
+  // fan.saved_artist - a fan saved/bookmarked an artist.
+  Loop.events.fanSavedArtist = function (payload) {
+    return emit("fan.saved_artist", payload);
+  };
+
+  // fan.interest_saved - a fan saved an interest/preference.
+  Loop.events.fanInterestSaved = function (payload) {
+    return emit("fan.interest_saved", payload);
+  };
+
+  // fan.home_personalized - a fan home feed was personalized.
+  Loop.events.fanHomePersonalized = function (payload) {
+    return emit("fan.home_personalized", payload);
+  };
+
+  // visitor.exhibit_viewed - a visitor viewed a digital exhibit.
+  Loop.events.visitorExhibitViewed = function (payload) {
+    return emit("visitor.exhibit_viewed", payload);
+  };
+
+  // notification.opened - a notification was opened.
+  Loop.events.notificationOpened = function (payload) {
+    return emit("notification.opened", payload);
+  };
+
+  // session.login - any user authenticated. Role goes in the payload,
+  // e.g. Loop.events.sessionLogin({ role: "fan" }) or { role: "artist" }.
+  Loop.events.sessionLogin = function (payload) {
+    return emit("session.login", payload);
+  };
+
   // Also expose the raw event names for direct Loop.track(...) use.
   Loop.EVENTS = Object.assign(Loop.EVENTS || {}, {
     ARTIST_PROFILE_VIEWED: "artist.profile_viewed",
     ARTIST_CLAIMED_PROFILE: "artist.claimed_profile",
     ARTIST_SUBMITTED_MUSIC: "artist.submitted_music",
     FAN_SIGNUP_STARTED: "fan.signup_started",
-    CONTACT_FORM_SUBMITTED: "contact.form_submitted"
+    CONTACT_FORM_SUBMITTED: "contact.form_submitted",
+    ARTIST_THEME_CHANGED: "artist.theme_changed",
+    FAN_REGISTERED: "fan.registered",
+    FAN_FOLLOWED_ARTIST: "fan.followed_artist",
+    FAN_SAVED_ARTIST: "fan.saved_artist",
+    FAN_INTEREST_SAVED: "fan.interest_saved",
+    FAN_HOME_PERSONALIZED: "fan.home_personalized",
+    VISITOR_EXHIBIT_VIEWED: "visitor.exhibit_viewed",
+    NOTIFICATION_OPENED: "notification.opened",
+    SESSION_LOGIN: "session.login"
   });
 })(typeof window !== "undefined" ? window : this);

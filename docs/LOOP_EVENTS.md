@@ -61,3 +61,75 @@ window.AIMCLoop.events.artistSubmittedMusic({ trackId: "abc" });
 window.AIMCLoop.events.fanSignupStarted({ step: "email" });
 window.AIMCLoop.events.contactFormSubmitted({ form: "booking" });
 ```
+
+## Canonical Event Taxonomy (authoritative)
+
+As of the taxonomy cleanup, ArtistsInMyCity emits a single set of canonical,
+dot-namespaced event names. Loop stores exactly ONE canonical event per action.
+The naming convention is `domain.action`, past-tense, lower_snake action.
+
+### Canonical event names
+
+| Event | Meaning |
+| --- | --- |
+| `artist.profile_viewed` | A visitor viewed an artist profile. |
+| `artist.claimed_profile` | An artist claimed their profile. |
+| `artist.submitted_music` | An artist submitted music. |
+| `artist.theme_changed` | An artist changed their profile/exhibit theme. |
+| `fan.signup_started` | A fan began the signup flow. |
+| `fan.registered` | A fan completed registration. |
+| `fan.followed_artist` | A fan followed an artist. |
+| `fan.saved_artist` | A fan saved/bookmarked an artist. |
+| `fan.interest_saved` | A fan saved an interest/preference. |
+| `fan.home_personalized` | A fan home feed was personalized. |
+| `visitor.exhibit_viewed` | A visitor viewed a digital exhibit. |
+| `contact.form_submitted` | A contact form was submitted. |
+| `notification.opened` | A notification was opened. |
+| `session.login` | Any user authenticated. Role is in the payload. |
+
+### session.login and role
+
+All login events use the single `session.login` name. The actor role is carried
+in the payload, never in the event name:
+
+```js
+Loop.events.sessionLogin({ role: "fan" });
+Loop.events.sessionLogin({ role: "artist" });
+```
+
+The former `fan_login` and `user_login` names are no longer canonical. If a
+legacy caller still sends them, the Netlify function translates them to
+`session.login` (and `fan_login` adds `role: "fan"` to the payload).
+
+### Legacy -> canonical translation (transition shim)
+
+Older page bundles may still emit legacy snake_case names. The Netlify function
+`netlify/functions/loop-event.js` translates them server-side so Loop only ever
+stores the canonical name. No duplicate old+new events are emitted.
+
+| Legacy name (accepted) | Canonical name (stored) |
+| --- | --- |
+| `fan_login` | `session.login` (adds `role: "fan"`) |
+| `user_login` | `session.login` |
+| `fan_registered` | `fan.registered` |
+| `fan_followed_artist` | `fan.followed_artist` |
+| `fan_saved_exhibit` | `fan.saved_artist` |
+| `fan_interest_saved` | `fan.interest_saved` |
+| `fan_home_personalized` | `fan.home_personalized` |
+| `artist_theme_changed` | `artist.theme_changed` |
+| `visitor_visited_exhibit` | `visitor.exhibit_viewed` |
+| `notification_opened` | `notification.opened` |
+
+### Dropped events
+
+`roadie_memory_updated` is intentionally NOT forwarded to the product Loop
+stream for now. It is an internal agent-memory signal; the client helper is a
+no-op and the Netlify function drops it (returns `skipped: true`). It may be
+routed to a Brain/agent channel in a later phase.
+
+### Not yet wired
+
+This change only normalizes event names and helper methods. There is still no
+Work OS item creation, no CRM mutation, and no Brain processing. Events are only
+sent to Loop. Environment variables and the internal function route are
+unchanged.
