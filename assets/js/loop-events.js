@@ -360,3 +360,72 @@
     window.addEventListener("online", flushQueue);
   } catch (e) {}
 })(window);
+
+/* ==============================================================
+ * EMG Loop Event Gateway - standardized producer events
+ * --------------------------------------------------------------
+ * Adds the canonical dot-namespaced events required by the EMG
+ * Loop Event Gateway contract. These are thin wrappers over the
+ * existing AIMCLoop.track(eventName, payload) dispatcher, so they
+ * flow through the same internal Netlify function (loop-event) and
+ * never touch the webhook secret in the browser.
+ *
+ * eventType values sent to Loop:
+ *   artist.profile_viewed
+ *   artist.claimed_profile
+ *   artist.submitted_music
+ *   fan.signup_started
+ *   contact.form_submitted
+ * ============================================================== */
+(function (w) {
+  var Loop = w.AIMCLoop;
+  if (!Loop || typeof Loop.track !== "function") return;
+
+  // Safe emit: track() is already fail-safe, but guard here too so a
+  // tracking call can never throw into page/UX code.
+  function emit(eventType, payload) {
+    try {
+      return Loop.track(eventType, payload || {});
+    } catch (_e) {
+      if (w.console && console.warn) {
+        console.warn("[AIMCLoop] event emit failed:", eventType);
+      }
+    }
+  }
+
+  Loop.events = Loop.events || {};
+
+  // artist.profile_viewed - a visitor viewed an artist profile.
+  Loop.events.artistProfileViewed = function (payload) {
+    return emit("artist.profile_viewed", payload);
+  };
+
+  // artist.claimed_profile - an artist claimed their profile.
+  Loop.events.artistClaimedProfile = function (payload) {
+    return emit("artist.claimed_profile", payload);
+  };
+
+  // artist.submitted_music - an artist submitted music.
+  Loop.events.artistSubmittedMusic = function (payload) {
+    return emit("artist.submitted_music", payload);
+  };
+
+  // fan.signup_started - a fan began the signup flow.
+  Loop.events.fanSignupStarted = function (payload) {
+    return emit("fan.signup_started", payload);
+  };
+
+  // contact.form_submitted - a contact form was submitted.
+  Loop.events.contactFormSubmitted = function (payload) {
+    return emit("contact.form_submitted", payload);
+  };
+
+  // Also expose the raw event names for direct Loop.track(...) use.
+  Loop.EVENTS = Object.assign(Loop.EVENTS || {}, {
+    ARTIST_PROFILE_VIEWED: "artist.profile_viewed",
+    ARTIST_CLAIMED_PROFILE: "artist.claimed_profile",
+    ARTIST_SUBMITTED_MUSIC: "artist.submitted_music",
+    FAN_SIGNUP_STARTED: "fan.signup_started",
+    CONTACT_FORM_SUBMITTED: "contact.form_submitted"
+  });
+})(typeof window !== "undefined" ? window : this);

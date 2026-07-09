@@ -1,132 +1,138 @@
-/*
- * ArtistsInMyCity - EMG LOOP event pipeline (Sprint 10).
- * ------------------------------------------------------------------
- * Receives normalized site events from the browser (window.AIMCLoop)
- * and forwards them, signed, to the EMG LOOP webhook. LOOP is the only
- * component that writes to Neon. This function never touches Neon and
- * never exposes any secret to the browser.
- */
+// netlify/functions/loop-event.js
+//
+// ArtistsInMyCity -> EMG Loop Event Gateway (producer side).
+//
+// This server-side Netlify Function is the ONLY place the Loop webhook secret
+// is read. The browser posts a lightweight event to this function; the function
+// normalizes it into the EMG Loop event envelope and forwards it to Loop with
+// the shared-secret header. The secret is never sent to or exposed in the browser.
+//
+// Contract (EMG Loop Event Gateway):
+//   POST https://app.emgloop.com/api/v1/events
+//   header: x-emg-loop-secret: <EMG_LOOP_WEBHOOK_SECRET>
+//   body:   { eventId, platform, site, eventType, occurredAt, anonymousId,
+//             userId, sessionId, pageUrl, referrer, payload, metadata }
+//
+// Fail-safe: if env vars are missing we warn and no-op (HTTP 200) so the site
+// never breaks. All Loop calls are timed out and errors are swallowed.
 
-const crypto = require("crypto");
+"use strict";
 
-const CORS = {
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store"
-};
+const PLATFORM = "artistsinmycity";
+const SITE = "artistsinmycity.com";
+const DEFAULT_TIMEOUT_MS = 4000;
 
-function resp(statusCode, obj) {
-  return { statusCode: statusCode, headers: CORS, body: JSON.stringify(obj) };
+function jsonResponse(statusCode, body) {
+  return {
+    statusCode,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body || {}),
+  };
 }
 
-function newId() {
-  try { return crypto.randomUUID(); }
-  catch (e) { return "evt_" + Date.now() + "_" + Math.random().toString(36).slice(2, 10); }
+function safeParse(raw) {
+  if (!raw) return {};
+  try { return JSON.parse(raw); } catch (_e) { return {}; }
 }
 
-function str(v) { return (typeof v === "string") ? v : (v == null ? null : String(v)); }
-
-exports.handler = async (event) => {
-  // POST only.
-  if (event.httpMethod !== "POST") {
-    return resp(405, { ok: false, error: "Method not allowed" });
-  }
-
-  // Validate JSON body.
-  let input;
+// RFC4122-ish v4 id without extra deps.
+function uuid() {
   try {
-    input = JSON.parse(event.body || "{}");
-  } catch (e) {
-    return resp(400, { ok: false, error: "Invalid JSON" });
+    const c = require("crypto");
+    if (typeof c.randomUUID === "function") return c.randomUUID();
+  } catch (_e) {}
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (ch) {
+    const r = (Math.random() * 16) | 0;
+    const v = ch === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function firstDefined() {
+  for (let i = 0; i < arguments.length; i++) {
+    const v = arguments[i];
+    if (v !== undefined && v !== null && v !== "") return v;
   }
-  if (!input || typeof input !== "object" || Array.isArray(input)) {
-    return resp(400, { ok: false, error: "Invalid body" });
+  return null;
+}
+
+exports.handler = async function (event) {
+  // Only accept POSTs from our own client layer.
+  if (event.httpMethod === "OPTIONS") {
+    return jsonResponse(204, {});
+  }
+  if (event.httpMethod !== "POST") {
+    return jsonResponse(405, { ok: false, error: "method_not_allowed" });
   }
 
-  // event_name is required.
-  const eventName = str(input.event_name);
-  if (!eventName) {
-    return resp(400, { ok: false, error: "event_name is required" });
-  }
-
-  // Config from Netlify env (never sent to browser).
   const WEBHOOK_URL = process.env.EMG_LOOP_WEBHOOK_URL;
   const WEBHOOK_SECRET = process.env.EMG_LOOP_WEBHOOK_SECRET;
-  const PLATFORM_ID = process.env.AIMC_PLATFORM_ID || "artistsinmycity";
-  const SITE_ID = process.env.AIMC_SITE_ID || "artistsinmycity";
-  const ENVIRONMENT = process.env.CONTEXT || process.env.NODE_ENV || "production";
 
+  // Fail-safe: without configuration, warn and no-op. Never break the caller.
   if (!WEBHOOK_URL || !WEBHOOK_SECRET) {
-    // Safe setup error - no secret values leaked.
-    return resp(503, { ok: false, error: "LOOP webhook not configured" });
+    console.warn(
+      "[loop-event] EMG_LOOP_WEBHOOK_URL or EMG_LOOP_WEBHOOK_SECRET missing; skipping Loop dispatch."
+    );
+    return jsonResponse(200, { ok: true, skipped: true, reason: "not_configured" });
   }
 
-  // Build the normalized event envelope.
-  const now = new Date().toISOString();
-  const normalized = {
-    event_id: str(input.event_id) || newId(),
-    event_name: eventName,
-    occurred_at: str(input.occurred_at) || now,
-    received_at: now,
-    platform_id: PLATFORM_ID,
-    site_id: SITE_ID,
-    site_url: "https://artistsinmycity.com",
-    environment: str(input.environment) || ENVIRONMENT,
-    source: "web",
-    anonymous_id: str(input.anonymous_id) || null,
-    clerk_user_id: str(input.clerk_user_id) || null,
-    role: str(input.role) || null,
-    session_id: str(input.session_id) || null,
-    page_url: str(input.page_url) || null,
-    referrer: str(input.referrer) || null,
-    payload: (input.payload && typeof input.payload === "object" && !Array.isArray(input.payload)) ? input.payload : {}
+  const body = safeParse(event.body);
+
+  // Accept either the new field names or the older snake_case names the client
+  // may still send, and normalize to the EMG Loop Event Gateway envelope.
+  const eventType = firstDefined(body.eventType, body.event_name, body.event, body.name);
+  if (!eventType) {
+    return jsonResponse(400, { ok: false, error: "missing_event_type" });
+  }
+
+  const nowIso = new Date().toISOString();
+  const envelope = {
+    eventId: firstDefined(body.eventId, body.event_id, uuid()),
+    platform: PLATFORM,
+    site: SITE,
+    eventType: eventType,
+    occurredAt: firstDefined(body.occurredAt, body.occurred_at, nowIso),
+    anonymousId: firstDefined(body.anonymousId, body.anonymous_id),
+    userId: firstDefined(body.userId, body.clerk_user_id, body.user_id),
+    sessionId: firstDefined(body.sessionId, body.session_id),
+    pageUrl: firstDefined(body.pageUrl, body.page_url),
+    referrer: firstDefined(body.referrer),
+    payload: body.payload && typeof body.payload === "object" ? body.payload : {},
+    metadata: Object.assign(
+      {
+        source: "web",
+        environment: process.env.CONTEXT || process.env.NODE_ENV || "production",
+        receivedAt: nowIso,
+      },
+      body.metadata && typeof body.metadata === "object" ? body.metadata : {}
+    ),
   };
 
-  // Sign the request body with the shared secret (HMAC-SHA256).
-  const bodyString = JSON.stringify(normalized);
-  const timestamp = String(Date.now());
-  let signature;
-  try {
-    signature = crypto
-      .createHmac("sha256", WEBHOOK_SECRET)
-      .update(timestamp + "." + bodyString)
-      .digest("hex");
-  } catch (e) {
-    return resp(500, { ok: false, error: "Signing failed" });
-  }
+  const controller = new AbortController();
+  const timer = setTimeout(function () { controller.abort(); }, DEFAULT_TIMEOUT_MS);
 
-  // Forward the signed, normalized event to EMG LOOP.
-  let loopStatus = 0;
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(function () { controller.abort(); }, 8000);
-    const loopRes = await fetch(WEBHOOK_URL, {
+    const res = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "X-AIMC-Platform": PLATFORM_ID,
-        "X-AIMC-Timestamp": timestamp,
-        "X-AIMC-Signature": signature
+        "content-type": "application/json",
+        "x-emg-loop-secret": WEBHOOK_SECRET,
       },
-      body: bodyString,
-      signal: controller.signal
+      body: JSON.stringify(envelope),
+      signal: controller.signal,
     });
-    clearTimeout(timer);
-    loopStatus = loopRes.status;
-    if (!loopRes.ok) {
-      // Do not leak upstream response detail; return a generic gateway error.
-      return resp(502, { ok: false, error: "LOOP rejected event", event_id: normalized.event_id });
-    }
-  } catch (e) {
-    // Network / timeout / abort - browser should queue and retry.
-    return resp(502, { ok: false, error: "LOOP unreachable", event_id: normalized.event_id });
-  }
 
-  // Success. Return only non-sensitive normalized identifiers.
-  return resp(200, {
-    ok: true,
-    event_id: normalized.event_id,
-    event_name: normalized.event_name,
-    occurred_at: normalized.occurred_at,
-    forwarded: true
-  });
+    if (!res.ok) {
+      console.warn("[loop-event] Loop responded with status " + res.status);
+      return jsonResponse(202, { ok: true, forwarded: false, status: res.status });
+    }
+
+    return jsonResponse(200, { ok: true, forwarded: true, eventId: envelope.eventId });
+  } catch (err) {
+    const reason = err && err.name === "AbortError" ? "timeout" : "network_error";
+    console.warn("[loop-event] Loop dispatch failed: " + reason);
+    return jsonResponse(202, { ok: true, forwarded: false, reason: reason });
+  } finally {
+    clearTimeout(timer);
+  }
 };

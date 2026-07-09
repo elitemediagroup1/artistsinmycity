@@ -1,172 +1,136 @@
-# EMG LOOP Webhook -> Neon Event Pipeline
+# EMG Loop Event Gateway - ArtistsInMyCity Producer Integration
 
-Sprint 10 connects ArtistsInMyCity to **EMG LOOP**. Site activity is sent
-server-side to LOOP, and LOOP stores it in Neon. The browser never writes to
-Neon and never sees the webhook secret or any database connection string.
+ArtistsInMyCity is a **producer** that sends signed behavioral events into the
+EMG Loop Event Gateway. This document describes the producer-side integration
+only. It does not modify Loop.
 
 ## Architecture
 
 ```
-Browser (window.AIMCLoop.track)
-        |  POST normalized event (no secrets)
-        v
-Netlify Function  /.netlify/functions/loop-event
-        |  adds env config, signs with HMAC-SHA256
-        v
-EMG LOOP Webhook  (EMG_LOOP_WEBHOOK_URL)
-        |
-        v
-Neon (managed entirely by LOOP)
+Browser (assets/js/loop-events.js, window.AIMCLoop)
+   |  POST  /.netlify/functions/loop-event      (same-origin, no secret)
+   v
+Netlify Function (netlify/functions/loop-event.js)
+   |  POST  https://app.emgloop.com/api/v1/events
+   |        header: x-emg-loop-secret: <EMG_LOOP_WEBHOOK_SECRET>
+   v
+EMG Loop Event Gateway
 ```
 
-Only the Netlify Function talks to LOOP. Only LOOP talks to Neon.
+The webhook secret is read **only** inside the Netlify Function. The browser
+never receives it and only ever talks to the same-origin internal function.
 
 ## Required Netlify environment variables
 
-Set these in Netlify (Site settings -> Environment variables). None are ever
-exposed to the browser.
-
-| Variable | Required | Purpose |
+| Variable | Required | Description |
 | --- | --- | --- |
-| `EMG_LOOP_WEBHOOK_URL` | Yes | Destination LOOP webhook endpoint the function POSTs to. |
-| `EMG_LOOP_WEBHOOK_SECRET` | Yes | Shared secret used to HMAC-sign each request. |
-| `AIMC_SITE_ID` | No | Site identifier. Defaults to `artistsinmycity`. |
-| `AIMC_PLATFORM_ID` | No | Platform identifier. Defaults to `artistsinmycity`. |
+| `EMG_LOOP_WEBHOOK_URL` | Yes | Loop Event Gateway endpoint the function POSTs to. Set to `https://app.emgloop.com/api/v1/events`. |
+| `EMG_LOOP_WEBHOOK_SECRET` | Yes | Shared secret sent in the `x-emg-loop-secret` header. Must equal the Loop `LOOP_EVENT_SECRET`. Server-side only. |
 
-Example (`.env` / Netlify UI, values are placeholders):
+Set both in **Netlify -> Site settings -> Environment variables**. Do not commit
+real values; `.env.example` documents the names only.
 
-```
-EMG_LOOP_WEBHOOK_URL=
-EMG_LOOP_WEBHOOK_SECRET=
-AIMC_SITE_ID=artistsinmycity
-AIMC_PLATFORM_ID=artistsinmycity
-```
-
-If `EMG_LOOP_WEBHOOK_URL` or `EMG_LOOP_WEBHOOK_SECRET` is missing, the function
-returns a safe setup error (`503 LOOP webhook not configured`) and the browser
-queues the event locally for retry. No secret values are ever returned.
+If either variable is missing, the function logs a warning and no-ops (returns
+HTTP 200, `skipped: true`). The site continues to work normally.
 
 ## Netlify function: loop-event
 
 Path: `netlify/functions/loop-event.js`
 
-- POST only (other methods return `405`).
-- Validates JSON body; requires `event_name` (`400` otherwise).
-- Generates `event_id` if not supplied.
-- Adds `occurred_at` / `received_at` timestamps.
-- Adds `platform_id`, `site_id`, `site_url`, `environment`, `source: web`.
-- Passes through `anonymous_id`, `clerk_user_id`, `role`, `session_id`, `page_url`, `referrer`, `payload`.
-- Signs the request with HMAC-SHA256 over `timestamp + "." + body`.
-- Forwards to `EMG_LOOP_WEBHOOK_URL` with headers `X-AIMC-Signature`, `X-AIMC-Timestamp`, `X-AIMC-Platform`.
-- Returns only non-sensitive identifiers on success.
-- Never returns stack traces, secrets, or the Neon connection string.
+- Accepts `POST` (JSON) from the browser layer at `/.netlify/functions/loop-event`.
+- Normalizes the incoming event into the EMG Loop envelope (below).
+- Forwards to `EMG_LOOP_WEBHOOK_URL` with a single header: `x-emg-loop-secret`.
+- Times out the outbound request (AbortController, ~4s) and swallows all errors
+  so page loads are never blocked.
+- Never returns Loop internals, stack traces, or secret values to the caller.
 
-### Normalized event shape
+### Event envelope (sent to Loop)
 
 ```json
 {
-  "event_id": "uuid",
-  "event_name": "page_view",
-  "occurred_at": "ISO-8601",
-  "received_at": "ISO-8601",
-  "platform_id": "artistsinmycity",
-  "site_id": "artistsinmycity",
-  "site_url": "https://artistsinmycity.com",
-  "environment": "production",
-  "source": "web",
-  "anonymous_id": "uuid-or-null",
-  "clerk_user_id": "user_xxx-or-null",
-  "role": "artist|fan|creator|admin-or-null",
-  "session_id": "sess_xxx-or-null",
-  "page_url": "string-or-null",
+  "eventId": "uuid",
+  "platform": "artistsinmycity",
+  "site": "artistsinmycity.com",
+  "eventType": "artist.profile_viewed",
+  "occurredAt": "ISO-8601",
+  "anonymousId": "uuid-or-null",
+  "userId": "user_xxx-or-null",
+  "sessionId": "sess_xxx-or-null",
+  "pageUrl": "string-or-null",
   "referrer": "string-or-null",
-  "payload": {}
+  "payload": {},
+  "metadata": { "source": "web", "environment": "production", "receivedAt": "ISO-8601" }
 }
 ```
 
-### Response codes
+`platform` is always `"artistsinmycity"` and `site` is always
+`"artistsinmycity.com"`. `eventId`, `occurredAt`, and `metadata.receivedAt` are
+filled in by the function when not supplied.
+
+### Example request to Loop
+
+```
+POST https://app.emgloop.com/api/v1/events
+content-type: application/json
+x-emg-loop-secret: <EMG_LOOP_WEBHOOK_SECRET>
+
+{ "eventId": "1f6...", "platform": "artistsinmycity", "site": "artistsinmycity.com",
+  "eventType": "fan.signup_started", "occurredAt": "2026-07-08T00:00:00.000Z",
+  "anonymousId": "a1b2...", "userId": null, "sessionId": "sess_9x...",
+  "pageUrl": "https://artistsinmycity.com/signup", "referrer": "https://google.com/",
+  "payload": { "step": "email" }, "metadata": { "source": "web" } }
+```
+
+### Response codes (from the internal function)
 
 | Code | Meaning |
 | --- | --- |
-| 200 | Event accepted and forwarded to LOOP. |
-| 400 | Invalid JSON, invalid body, or missing `event_name`. |
+| 200 | Forwarded to Loop successfully, or skipped because not configured. |
+| 202 | Accepted locally; Loop was unreachable/timed out/non-2xx (UX not blocked). |
+| 400 | Missing `eventType` in the request. |
 | 405 | Non-POST method. |
-| 502 | LOOP rejected the event or was unreachable (browser queues). |
-| 503 | Webhook not configured (missing env vars). |
 
 ## Frontend: window.AIMCLoop
 
-Defined in `assets/js/loop-events.js`. The Sprint 10 extension wraps the
-existing `track()` and `emit()` so every event is forwarded server-side while
-keeping GA mirroring and existing local behavior.
+Defined in `assets/js/loop-events.js`. Emit events with:
 
 ```js
-window.AIMCLoop.track("search_performed", { query: "jazz" });
+window.AIMCLoop.track("artist.profile_viewed", { artistId: "123" });
+// or the standardized named helpers:
+window.AIMCLoop.events.artistProfileViewed({ artistId: "123" });
+window.AIMCLoop.events.artistClaimedProfile({ artistId: "123" });
+window.AIMCLoop.events.artistSubmittedMusic({ trackId: "abc" });
+window.AIMCLoop.events.fanSignupStarted({ step: "email" });
+window.AIMCLoop.events.contactFormSubmitted({ form: "booking" });
 ```
 
-Behavior:
+The client posts only to the internal function; it never sends events directly
+to Loop and never holds the secret.
 
-- Builds a normalized event (adds `anonymous_id`, `clerk_user_id`, `role`,
-  `session_id`, `page_url`, `referrer`, `source: web`).
-- POSTs to `/.netlify/functions/loop-event`.
-- On failure, queues the event in `localStorage` under `aimc.loop.queue`.
-- Retries the queue on page load and on the browser `online` event.
-- Continues to mirror events to GA4 via `AIMC.trackEvent`.
+## Standardized events
 
-The `anonymous_id` is persisted in `localStorage` under `aimc.anon_id`.
+These dot-namespaced events are guaranteed by this integration:
 
-### Local fallback / dev note
+- `artist.profile_viewed`
+- `artist.claimed_profile`
+- `artist.submitted_music`
+- `fan.signup_started`
+- `contact.form_submitted`
 
-The `aimc.loop.queue` localStorage queue is a resilience fallback for failed or
-offline sends -- not a substitute for the server pipeline. It drains automatically
-once the function and LOOP webhook are reachable.
-
-## Event coverage
-
-Minimum events tracked through the pipeline:
-
-- `page_view`
-- `city_view`
-- `category_view`
-- `search_performed`
-- `location_search`
-- `location_selected`
-- `roadie_chat_started`
-- `roadie_message_sent`
-- `roadie_response_received`
-- `roadie_error`
-- `artist_onboarding_started`
-- `artist_onboarding_completed`
-- `artist_theme_changed`
-- `collection_created`
-- `collection_updated`
-- `artist_uploaded_media`
-- `artist_previewed`
-- `artist_published`
-- `fan_signup`
-- `artist_signup`
-- `fan_followed_artist`
-- `fan_saved_exhibit`
-- `event_search`
-- `maps_creative_search`
-- `booking_request`
-- `merch_click`
-- `ticket_click`
-- `notification_opened`
-- `command_palette_opened`
+Existing analytics events continue to flow through `AIMCLoop.track(...)`.
 
 ## Security model
 
 - The browser never receives `EMG_LOOP_WEBHOOK_SECRET`.
-- The browser never receives any Neon connection string or credentials.
-- The browser never writes to Neon directly.
-- Requests to LOOP are signed server-side with HMAC-SHA256.
-- Errors return generic messages only -- no stack traces or secret values.
-- Client-supplied `clerk_user_id`/`role` are contextual analytics fields only and
-  should be treated as untrusted by LOOP (verify against Clerk if authoritative).
+- The browser only calls the same-origin `/.netlify/functions/loop-event`.
+- Requests to Loop are authenticated with the `x-emg-loop-secret` header,
+  server-side only. (The previous HMAC headers `X-AIMC-Signature`,
+  `X-AIMC-Timestamp`, and `X-AIMC-Platform` have been removed.)
+- Errors return generic messages only, no stack traces or secret values.
+- Loop dispatch is best-effort: timeouts and failures never block the UX.
 
 ## Related files
 
-- `netlify/functions/loop-event.js` -- signing + forwarding function.
-- `assets/js/loop-events.js` -- `window.AIMCLoop` layer + pipeline.
-- `docs/BUILD_STATUS.md` -- sprint history.
+- `netlify/functions/loop-event.js` -- normalize + forward function (holds secret).
+- `assets/js/loop-events.js` -- `window.AIMCLoop` client layer + standardized events.
+- `.env.example` -- documents `EMG_LOOP_WEBHOOK_URL` and `EMG_LOOP_WEBHOOK_SECRET`.

@@ -39,3 +39,25 @@ Events drive recommendations, insights, and notifications.
 - Events are documented (this file).
 - Events fire without console errors.
 - No network dependency.
+
+## EMG Loop Event Gateway - standardized events (producer contract)
+
+The following dot-namespaced events are sent to the EMG Loop Event Gateway via
+`netlify/functions/loop-event.js` using the `x-emg-loop-secret` header and the
+camelCase event envelope. See `docs/EMG_LOOP_WEBHOOK.md` for the full contract.
+
+- `artist.profile_viewed` -- a visitor viewed an artist profile.
+- `artist.claimed_profile` -- an artist claimed their profile.
+- `artist.submitted_music` -- an artist submitted music.
+- `fan.signup_started` -- a fan began the signup flow.
+- `contact.form_submitted` -- a contact form was submitted.
+
+Emit them via the standardized helpers:
+
+```js
+window.AIMCLoop.events.artistProfileViewed({ artistId: "123" });
+window.AIMCLoop.events.artistClaimedProfile({ artistId: "123" });
+window.AIMCLoop.events.artistSubmittedMusic({ trackId: "abc" });
+window.AIMCLoop.events.fanSignupStarted({ step: "email" });
+window.AIMCLoop.events.contactFormSubmitted({ form: "booking" });
+```
